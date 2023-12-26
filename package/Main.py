@@ -11,7 +11,7 @@ root2 = ctk.CTkToplevel()
 root.withdraw()
 root2.withdraw()
 
-mainImage = ctk.CTkImage(light_image=Image.open("mainImg.png"), size=(45, 45))
+mainImage = ctk.CTkImage(light_image=Image.open("package/mainImg.png"), size=(45, 45))
 crud = package.FirebaseCRUD.FirebaseCRUD()
 
 app = package.LoginWindow.LoginWindow(root, root2, mainImage, crud)
