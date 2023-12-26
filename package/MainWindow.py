@@ -1,70 +1,49 @@
-import tkinter
 from tkinter import *
 import customtkinter as ctk
-import PIL.Image
-
-ctk.set_appearance_mode("dark")
-
-root = ctk.CTk()
-root.title("MileageMate")
-root.geometry("1200x700")
+from PIL import Image
 
 
+class MainWindow(ctk.CTk):
 
-def leftPaneEnter():
-    button.configure(state="disabled")
-    if leftPane.cget("width")==100:
-        for i in range(leftPane.cget("width"), 300, 10):
-            headersPane.place(x=headersPane.winfo_x()+5, y=50)
-            leftPane.update()
-            leftPane.configure(True, width=i+10)
-        mainImageLabel.place_forget()
-        mainLabel.place(anchor=N, relx=0.5, rely=0.02)
-    else:
-        mainLabel.place_forget()
-        mainImageLabel.place(anchor=N, relx=0.5, rely=0.02)
-        for i in range(leftPane.cget("width"), 100, -10):
-            headersPane.place(x=headersPane.winfo_x()-5, y=50)
-            leftPane.update()
-            leftPane.configure(True, width=i-10)
-    button.configure(state="normal")
+    def __init__(self, master, **kwargs):
+        super().__init__(**kwargs)
+        self.master = master
 
+        self.leftPane = ctk.CTkFrame(self.master,width=300,height=700,fg_color="#f0fdf4",bg_color="white")
+        self.leftPane.pack(side=LEFT)
 
-body = ctk.CTkFrame(root, width=1200, height=700, fg_color="#1D1D1D", corner_radius=10)
-body.pack()
+        self.topPane = ctk.CTkFrame(self.master, width=900, height=100, fg_color="white",bg_color="white")
+        self.topPane.pack(side=TOP)
 
-leftPane = ctk.CTkFrame(body, width=100, height=680, fg_color="#444554", corner_radius=10)
-leftPane.place(x=10, y=10)
+        self.mainPane = ctk.CTkFrame(self.master, width=900, height=600, fg_color="white",bg_color="white")
+        self.mainPane.pack(side=TOP)
 
-button = ctk.CTkButton(leftPane, text="Open", fg_color="#7F7B82", hover_color="#444554",
-                        font=("Helvetica", 13, "bold"),cursor="hand2",command=leftPaneEnter,width=75)
-button.place(anchor=N, relx=0.5, rely=0.95)
+        self.overviewButton=ctk.CTkButton(self.topPane, text="Overview",width=100, fg_color="#dbfde7",
+                                            font=("Trebuchet", 12),
+                                             corner_radius=5, hover_color="#146732",
+                                            bg_color="white", border_width=1, text_color="#12833b",border_color="#12833b")
+        self.overviewButton.grid(column=0,row=0,pady=20,padx=20)
 
-mainLabel = ctk.CTkLabel(leftPane, text="MileageMate", font=("Helvetica", 17, "bold"))
+        self.fuelButton = ctk.CTkButton(self.topPane, text="Fuel",width=100, fg_color="white",
+                                            font=("Trebuchet", 12),
+                                             corner_radius=5, hover_color="#dbfde7",
+                                            bg_color="white", border_width=1, text_color="#12833b",border_color="#12833b")
+        self.fuelButton.grid(column=1, row=0,pady=20,padx=20)
 
-mainImage = ctk.CTkImage(light_image=PIL.Image.open("mainImg.png"), size=(36, 36))
-mainImageLabel = ctk.CTkLabel(leftPane, text="", image=mainImage)
-mainImageLabel.place(anchor=N, relx=0.5, rely=0.02)
+        self.servicesButton = ctk.CTkButton(self.topPane, text="Services",width=100, fg_color="white",
+                                            font=("Trebuchet", 12),
+                                             corner_radius=5, hover_color="#dbfde7",
+                                            bg_color="white", border_width=1, text_color="#12833b",border_color="#12833b")
+        self.servicesButton.grid(column=2, row=0,pady=20,padx=20)
 
-headersPane = ctk.CTkFrame(body, width=850, height=75, fg_color="#1D1D1D", corner_radius=10)
-headersPane.place(x=260, y=50)
+        self.carsButton = ctk.CTkButton(self.topPane, text="Cars",width=100, fg_color="white",
+                                            font=("Trebuchet", 12),
+                                             corner_radius=5, hover_color="#dbfde7",
+                                            bg_color="white", border_width=1, text_color="#12833b",border_color="#12833b")
+        self.carsButton.grid(column=3, row=0, pady=20, padx=20)
 
-button1 = ctk.CTkButton(headersPane, text="Overview", fg_color="#7F7B82", hover_color="#444554",
-                        font=("Helvetica", 13, "bold"),cursor="hand2")
-button2 = ctk.CTkButton(headersPane, text="Fuel", fg_color="#7F7B82", hover_color="#444554",
-                        font=("Helvetica", 13, "bold"),cursor="hand2")
-button3 = ctk.CTkButton(headersPane, text="Services", fg_color="#7F7B82", hover_color="#444554",
-                        font=("Helvetica", 13, "bold"),cursor="hand2")
-button4 = ctk.CTkButton(headersPane, text="Cars", fg_color="#7F7B82", hover_color="#444554",
-                        font=("Helvetica", 13, "bold"),cursor="hand2")
-button5 = ctk.CTkButton(headersPane, text="Nearby", fg_color="#7F7B82", hover_color="#444554",
-                        font=("Helvetica", 13, "bold"),cursor="hand2")
-
-button1.grid(row=0, column=0, padx=10)
-button2.grid(row=0, column=1, padx=10)
-button3.grid(row=0, column=2, padx=10)
-button4.grid(row=0, column=3, padx=10)
-button5.grid(row=0, column=4, padx=10)
-
-
-root.mainloop()
+        self.nearbyButton = ctk.CTkButton(self.topPane, text="Nearby",width=100, fg_color="white",
+                                            font=("Trebuchet", 12),
+                                             corner_radius=5, hover_color="#dbfde7",
+                                            bg_color="white", border_width=1, text_color="#12833b",border_color="#12833b")
+        self.nearbyButton.grid(column=4, row=0, pady=20, padx=20)

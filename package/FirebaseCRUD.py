@@ -11,10 +11,12 @@ class FirebaseCRUD:
         user_id = login
         self.database.child('users').child(user_id).set(data)
 
-    def readData(self):
-        user_id = '1234536'
-        user_info = self.database.child('users').child(user_id).get()
-        print(user_info.val())
+    def readData(self,user_id,desired_item):
+        try:
+            users_info = self.database.child('users').child(user_id)
+            return users_info.get().val().get(desired_item)
+        except AttributeError:
+            return ""
 
     def updateData(self):
         user_id = '1234536'

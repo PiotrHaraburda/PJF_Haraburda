@@ -97,4 +97,5 @@ class RegisterWindow(ctk.CTk):
         age = self.ageComboBox.get()
         password = self.passwordTextBox.get()
 
-        crud.createData(first_name, login, email, age, password)
+        if first_name != "" and login != "" and email != "" and password != "":
+            crud.createData(first_name, login, email, age, password)
