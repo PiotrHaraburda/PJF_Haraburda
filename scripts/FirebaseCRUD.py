@@ -1,9 +1,9 @@
-import package.FirebaseConnection
+import scripts.FirebaseConnection
 
 
 class FirebaseCRUD:
     def __init__(self):
-        con = package.FirebaseConnection.FirebaseConnection()
+        con = scripts.FirebaseConnection.FirebaseConnection()
         self.database = con.database
 
     def createData(self, first_name, login, email, age, password):

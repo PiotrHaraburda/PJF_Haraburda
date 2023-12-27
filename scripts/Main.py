@@ -1,9 +1,9 @@
 import tkinter as tk
 import customtkinter as ctk
-import package.LoginWindow
-import package.RegisterWindow
-import package.FirebaseCRUD
-import package.MainWindow
+import scripts.LoginWindow
+import scripts.RegisterWindow
+import scripts.FirebaseCRUD
+import scripts.MainWindow
 from PIL import Image
 
 root = ctk.CTk()
@@ -14,12 +14,20 @@ root.withdraw()
 root2.withdraw()
 root3.withdraw()
 
-mainImage = ctk.CTkImage(light_image=Image.open("package/mainImg.png"), size=(45, 45))
-crud = package.FirebaseCRUD.FirebaseCRUD()
+mainImage = ctk.CTkImage(light_image=Image.open("images/mainImg.png"), size=(45, 45))
+mainImage2 = ctk.CTkImage(light_image=Image.open("images/mainImg2.png"), size=(45, 45))
+accountInfoImage = ctk.CTkImage(light_image=Image.open("images/accountInfo.png"), size=(20, 20))
 
-app = package.LoginWindow.LoginWindow(root, root2, root3, mainImage, crud)
-app2 = package.RegisterWindow.RegisterWindow(root2, root, mainImage, crud)
-app3 = package.MainWindow.MainWindow(root3)
+dashboardImage = ctk.CTkImage(light_image=Image.open("images/dashboard.png"), size=(35, 35))
+accountImage = ctk.CTkImage(light_image=Image.open("images/account.png"), size=(35, 35))
+settingsImage = ctk.CTkImage(light_image=Image.open("images/settings.png"), size=(35, 35))
+logoutImage = ctk.CTkImage(light_image=Image.open("images/logout.png"), size=(35, 35))
+
+crud = scripts.FirebaseCRUD.FirebaseCRUD()
+
+app = scripts.LoginWindow.LoginWindow(root, root2, root3, mainImage, crud)
+app2 = scripts.RegisterWindow.RegisterWindow(root2, root, mainImage, crud)
+app3 = scripts.MainWindow.MainWindow(root3, app, mainImage2, accountInfoImage,dashboardImage,accountImage,settingsImage,logoutImage)
 
 
 def main():
