@@ -81,36 +81,38 @@ class LoginWindow(ctk.CTk):
         other_window.deiconify()
 
     def login_callback(self, crud, desired_item):
-        self.master.withdraw()
-        self.main_app_window.deiconify()
+         # self.master.withdraw()
+         # self.main_app_window.deiconify()
 
-        # self.invalidLoginLabel.place_forget()
-        # self.invalidPasswordLabel.place_forget()
-        #
-        # if crud.readData(self.loginTextBox.get("0.0", 'end-1c'), desired_item) == "":
-        #     self.invalidLoginLabel.place(x=240, y=210)
-        #     return
-        #
-        # if crud.readData(self.loginTextBox.get("0.0", 'end-1c'), desired_item) == self.passwordTextBox.get():
-        #     self.accountLogin=self.loginTextBox.get("0.0", 'end-1c')
-        #     self.welcomeLabel.configure(
-        #         text="Hello, " + crud.readData(self.loginTextBox.get("0.0", 'end-1c'), "first_name") + "!")
-        #     self.mainLabel.destroy()
-        #     self.logIntoLabel.destroy()
-        #     self.loginLabel.destroy()
-        #     self.loginTextBox.destroy()
-        #     self.invalidLoginLabel.destroy()
-        #     self.passwordLabel.destroy()
-        #     self.passwordTextBox.destroy()
-        #     self.invalidPasswordLabel.destroy()
-        #     self.loginButton.destroy()
-        #     self.notRegisteredLabel.destroy()
-        #     self.registerButton.destroy()
-        #     self.imageLabel.destroy()
-        #     self.master.overrideredirect(True)
-        #     self.master.after(1, self.resizeWindow)
-        # else:
-        #     self.invalidPasswordLabel.place(x=254, y=298)
+        self.invalidLoginLabel.place_forget()
+        self.invalidPasswordLabel.place_forget()
+
+        if crud.readUser(self.loginTextBox.get("0.0", 'end-1c'), desired_item) == "":
+            self.invalidLoginLabel.place(x=240, y=210)
+            return
+
+        if crud.readUser(self.loginTextBox.get("0.0", 'end-1c'), desired_item) == self.passwordTextBox.get():
+            self.accountLogin=self.loginTextBox.get("0.0", 'end-1c')
+            self.welcomeLabel.configure(
+                text="Hello, " + crud.readUser(self.loginTextBox.get("0.0", 'end-1c'), "first_name") + "!")
+            self.mainLabel.destroy()
+            self.logIntoLabel.destroy()
+            self.loginLabel.destroy()
+            self.loginTextBox.destroy()
+            self.invalidLoginLabel.destroy()
+            self.passwordLabel.destroy()
+            self.passwordTextBox.destroy()
+            self.invalidPasswordLabel.destroy()
+            self.loginButton.destroy()
+            self.notRegisteredLabel.destroy()
+            self.registerButton.destroy()
+            self.imageLabel.destroy()
+            self.master.overrideredirect(True)
+            self.master.withdraw()
+            self.main_app_window.deiconify()
+            # self.master.after(1, self.resizeWindow)
+        else:
+            self.invalidPasswordLabel.place(x=254, y=298)
 
     def resizeWindow(self):
         global j
