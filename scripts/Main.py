@@ -28,11 +28,13 @@ carImage = ctk.CTkImage(light_image=Image.open("images/car.png"), size=(100, 100
 plusImage = ctk.CTkImage(light_image=Image.open("images/plus.png"), size=(48, 48))
 backImage = ctk.CTkImage(light_image=Image.open("images/back.png"), size=(35, 35))
 
+receiptImage = Image.open("images/receipt.jpg")
+
 crud = scripts.FirebaseCRUD.FirebaseCRUD()
 
 app = scripts.LoginWindow.LoginWindow(root, root2, root3, mainImage, crud)
 app2 = scripts.RegisterWindow.RegisterWindow(root2, root, mainImage, crud)
-app3 = scripts.MainWindow.MainWindow(root3, app, mainImage2, accountInfoImage,dashboardImage,accountImage,settingsImage,logoutImage,fuelImage,serviceImage,carImage,plusImage,backImage,crud)
+app3 = scripts.MainWindow.MainWindow(root3, app, mainImage2, accountInfoImage,dashboardImage,accountImage,settingsImage,logoutImage,fuelImage,serviceImage,carImage,plusImage,backImage,receiptImage,crud)
 
 
 def main():

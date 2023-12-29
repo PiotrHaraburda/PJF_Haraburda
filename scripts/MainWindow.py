@@ -1,10 +1,15 @@
+import os
+import re
 from datetime import datetime, timedelta
 from tkinter import *
 import customtkinter as ctk
+import pytesseract
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import pandas as pd
 from tkcalendar import Calendar
 import matplotlib.pyplot as plt
+import cv2
+import numpy as np
 
 whichButtonPressed = 1
 
@@ -13,7 +18,7 @@ class MainWindow(ctk.CTk):
 
     def __init__(self, master, login_window, main_image2, account_info_image, dashboard_image, account_image,
                  settings_image,
-                 logout_image, fuel_image, service_image, car_image, plus_image, back_image, crud, **kwargs):
+                 logout_image, fuel_image, service_image, car_image, plus_image, back_image,receipt_image, crud, **kwargs):
         super().__init__(**kwargs)
         self.master = master
         self.login_window = login_window
@@ -85,73 +90,72 @@ class MainWindow(ctk.CTk):
         self.accountInfo = ctk.CTkLabel(self.mainPane, text="<Login>", font=("Century Gothic", 15, "bold"), height=20,
                                         fg_color="#e3e7e6", bg_color="#e3e7e6", text_color="#555555")
         self.accountInfo.place(x=834, y=10)
-        self.accountInfo.bind("<Map>", lambda event, crud=crud: self.accountInfoUpdate(crud))
 
         self.accInfoImage = ctk.CTkLabel(self.mainPane, image=account_info_image, text="")
         self.accInfoImage.place(x=810, y=5)
 
-        self.firstPane = ctk.CTkFrame(self.mainPane, width=300, height=230, corner_radius=5, fg_color="white",
-                                      bg_color="#e3e7e6")
-        self.firstPane.place(x=20, y=60)
+        self.carPane = ctk.CTkFrame(self.mainPane, width=300, height=230, corner_radius=5, fg_color="white",
+                                    bg_color="#e3e7e6")
+        self.carPane.place(x=20, y=60)
 
-        self.carNameLabel = ctk.CTkLabel(self.firstPane, text="Lexus IS200",
+        self.carNameLabel = ctk.CTkLabel(self.carPane, text="Lexus IS200",
                                          font=("Century Gothic", 25, "bold"), height=20,
                                          fg_color="white", text_color="#555555", width=260, justify=CENTER)
         self.carNameLabel.place(x=20, y=20)
 
-        self.yourCarLabel = ctk.CTkLabel(self.firstPane, text="Your personal vehicle",
+        self.yourCarLabel = ctk.CTkLabel(self.carPane, text="Your personal vehicle",
                                          font=("Century Gothic", 15, "bold"), height=20,
                                          fg_color="white", text_color="#00a05e", width=260, justify=CENTER)
         self.yourCarLabel.place(x=20, y=50)
 
-        self.carImage = ctk.CTkLabel(self.firstPane, image=car_image, text="", width=260, justify=CENTER)
+        self.carImage = ctk.CTkLabel(self.carPane, image=car_image, text="", width=260, justify=CENTER)
         self.carImage.place(x=20, y=95)
 
-        self.secondPane = ctk.CTkFrame(self.mainPane, width=300, height=105, corner_radius=5, fg_color="white",
-                                       bg_color="#e3e7e6")
-        self.secondPane.place(x=342, y=60)
+        self.fuelNumberPane = ctk.CTkFrame(self.mainPane, width=300, height=105, corner_radius=5, fg_color="white",
+                                           bg_color="#e3e7e6")
+        self.fuelNumberPane.place(x=342, y=60)
 
-        self.nrOfRefuelingsLabel = ctk.CTkLabel(self.secondPane, text="99",
+        self.nrOfRefuelingsLabel = ctk.CTkLabel(self.fuelNumberPane, text="99",
                                                 font=("Century Gothic", 30, "bold"),
                                                 fg_color="white", text_color="#00a05e")
         self.nrOfRefuelingsLabel.place(x=45, y=18)
 
-        self.refuelLabel = ctk.CTkLabel(self.secondPane, text="Refuelings done",
+        self.refuelLabel = ctk.CTkLabel(self.fuelNumberPane, text="Refuelings done",
                                         font=("Century Gothic", 15, "bold"),
                                         fg_color="white", text_color="#555555")
         self.refuelLabel.place(x=45, y=50)
 
-        self.fuelImage = ctk.CTkLabel(self.secondPane, image=fuel_image, text="")
+        self.fuelImage = ctk.CTkLabel(self.fuelNumberPane, image=fuel_image, text="")
         self.fuelImage.place(x=210, y=27)
 
-        self.thirdPane = ctk.CTkFrame(self.mainPane, width=300, height=105, corner_radius=5, fg_color="white",
-                                      bg_color="#e3e7e6")
-        self.thirdPane.place(x=342, y=185)
+        self.servicesNumberPane = ctk.CTkFrame(self.mainPane, width=300, height=105, corner_radius=5, fg_color="white",
+                                               bg_color="#e3e7e6")
+        self.servicesNumberPane.place(x=342, y=185)
 
-        self.nrOfServicesLabel = ctk.CTkLabel(self.thirdPane, text="99",
+        self.nrOfServicesLabel = ctk.CTkLabel(self.servicesNumberPane, text="99",
                                               font=("Century Gothic", 30, "bold"),
                                               fg_color="white", text_color="#00a05e")
         self.nrOfServicesLabel.place(x=45, y=20)
 
-        self.serviceLabel = ctk.CTkLabel(self.thirdPane, text="Services made",
+        self.serviceLabel = ctk.CTkLabel(self.servicesNumberPane, text="Services made",
                                          font=("Century Gothic", 15, "bold"),
                                          fg_color="white", text_color="#555555")
         self.serviceLabel.place(x=45, y=50)
 
-        self.serviceImage = ctk.CTkLabel(self.thirdPane, image=service_image, text="")
+        self.serviceImage = ctk.CTkLabel(self.servicesNumberPane, image=service_image, text="")
         self.serviceImage.place(x=210, y=27)
 
-        self.fourthPane = ctk.CTkFrame(self.mainPane, width=622, height=375, corner_radius=5, fg_color="white",
-                                       bg_color="#e3e7e6")
-        self.fourthPane.place(x=20, y=309)
+        self.plotPane = ctk.CTkFrame(self.mainPane, width=622, height=375, corner_radius=5, fg_color="white",
+                                     bg_color="#e3e7e6")
+        self.plotPane.place(x=20, y=309)
 
         self.make_plot()
 
-        self.fifthPane = ctk.CTkFrame(self.mainPane, width=250, height=200, corner_radius=5, fg_color="white",
-                                      bg_color="#e3e7e6")
-        self.fifthPane.place(x=660, y=60)
+        self.calendarPane = ctk.CTkFrame(self.mainPane, width=250, height=200, corner_radius=5, fg_color="white",
+                                         bg_color="#e3e7e6")
+        self.calendarPane.place(x=660, y=60)
 
-        self.cal = Calendar(self.fifthPane, selectmode='day',
+        self.cal = Calendar(self.calendarPane, selectmode='day',
                             year=datetime.now().year, month=datetime.now().month,
                             day=datetime.now().day, selectbackground='gray80',
                             selectforeground='black',
@@ -169,21 +173,48 @@ class MainWindow(ctk.CTk):
                             headersbackground='white',
                             headersforeground='gray70')
         self.cal.pack(fill="both", expand=True)
-        self.cal.bind("<<CalendarSelected>>", self.calendar_click_callback)
+        self.cal.bind("<<CalendarSelected>>", lambda event, crud=crud: self.calendar_click_callback(crud))
 
-        self.sixthPane = ctk.CTkFrame(self.mainPane, width=250, height=418, corner_radius=5, fg_color="white",
-                                      bg_color="#e3e7e6")
-        self.sixthPane.place(x=660, y=265)
+        self.calendarInfoPane = ctk.CTkFrame(self.mainPane, width=250, height=300, corner_radius=5, fg_color="white",
+                                             bg_color="#e3e7e6")
+        self.calendarInfoPane.place(x=660, y=265)
 
-        self.eventsOnLabel = ctk.CTkLabel(self.sixthPane, text="Events on:", font=("Century Gothic", 15, "bold"),
+        self.eventsOnLabel = ctk.CTkLabel(self.calendarInfoPane, text="Events on:", font=("Century Gothic", 18, "bold"),
                                           fg_color="white", text_color="#00a05e")
-        self.eventsOnLabel.place(x=55, y=20)
+        self.eventsOnLabel.place(x=32, y=20)
 
-        self.dateLabel = ctk.CTkLabel(self.sixthPane,
+        self.dateLabel = ctk.CTkLabel(self.calendarInfoPane,
                                       text=str(datetime.now().day) + "." + str(datetime.now().month) + "." + str(
-                                          datetime.now().year), font=("Century Gothic", 15, "bold"),
+                                          datetime.now().year), font=("Century Gothic", 18, "bold"),
                                       fg_color="white", text_color="#555555")
-        self.dateLabel.place(x=135, y=20)
+        self.dateLabel.place(x=128, y=20)
+
+        self.refuelingsNumberOnDateLabel=ctk.CTkLabel(self.calendarInfoPane, text="0x", font=("Century Gothic", 19, "bold"),
+                                                      fg_color="white", text_color="#00a05e", width=250, justify=CENTER)
+        self.refuelingsNumberOnDateLabel.place(x=0, y=95)
+
+        self.refuelingsOnDateLabel = ctk.CTkLabel(self.calendarInfoPane, text="Refuelings made", font=("Century Gothic", 15, "bold"),
+                                                  fg_color="white", text_color="#555555", width=250, justify=CENTER)
+        self.refuelingsOnDateLabel.place(x=0, y=120)
+
+        self.servicesNumberOnDateLabel = ctk.CTkLabel(self.calendarInfoPane, text="0x", font=("Century Gothic", 19, "bold"),
+                                                      fg_color="white", text_color="#00a05e", width=250,
+                                                      justify=CENTER)
+        self.servicesNumberOnDateLabel.place(x=0, y=180)
+
+        self.servicesOnDateLabel = ctk.CTkLabel(self.calendarInfoPane, text="Services made",
+                                                font=("Century Gothic", 15, "bold"),
+                                                fg_color="white", text_color="#555555", width=250, justify=CENTER)
+        self.servicesOnDateLabel.place(x=0, y=205)
+
+        self.sloganPane = ctk.CTkFrame(self.mainPane, width=250, height=96, corner_radius=5, fg_color="white",
+                                             bg_color="#e3e7e6")
+        self.sloganPane.place(x=660, y=587)
+
+        self.sloganLabel = ctk.CTkLabel(self.sloganPane,
+                                      text="MileageMate:\nTrack Auto Costs Effortlessly!", font=("Century Gothic", 13, "bold"),
+                                      fg_color="white", text_color="#00a05e",width=250,justify=CENTER)
+        self.sloganLabel.place(x=0, y=30)
 
         self.seventhPane = ctk.CTkScrollableFrame(self.mainPane, width=800, height=610, corner_radius=5,
                                                   fg_color="white",
@@ -306,6 +337,78 @@ class MainWindow(ctk.CTk):
         self.selectedTabIndicator = ctk.CTkFrame(self.leftStrip, width=5, height=40, fg_color="white")
         self.selectedTabIndicator.place(x=4, y=148)
 
+        self.mainPane.bind("<Map>", lambda event, crud=crud: self.accountInfoUpdate(crud))
+
+
+        self.scanReceiptImage()
+
+    def scanReceiptImage(self):
+        # Wczytaj obraz
+        image = cv2.imread('images/receipt.jpg')
+
+        # Konwersja na odcienie szarości
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        # Usunięcie szumu
+        blurred = cv2.medianBlur(gray, 5)
+
+        # Binaryzacja
+        thresholded = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+
+        # Dylatacja
+        kernel = np.ones((1, 1), np.uint8)
+        dilated = cv2.dilate(thresholded, kernel, iterations=1)
+
+        # Erozja
+        eroded = cv2.erode(dilated, kernel, iterations=1)
+
+        # Otwarcie
+        opened = cv2.morphologyEx(eroded, cv2.MORPH_OPEN, kernel)
+
+        # Detekcja krawędzi Canny
+        edges = cv2.Canny(opened, 50, 300)
+
+        # Korekcja nachylenia
+        coords = np.column_stack(np.where(edges > 0))
+        angle = cv2.minAreaRect(coords)[-1]
+        if angle < -45:
+            angle = -(90 + angle)
+        else:
+            angle = -angle
+        (h, w) = edges.shape[:2]
+        center = (w // 2, h // 2)
+        M = cv2.getRotationMatrix2D(center, angle, 1.0)
+        rotated = cv2.warpAffine(edges, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+
+        resized_image = cv2.resize(blurred, (465, 855))
+        cv2.imshow('Processed Image', resized_image)
+
+        custom_config = r'--oem 3 --psm 11'
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+        result=pytesseract.image_to_string(blurred,lang="pol",config=custom_config)
+
+        pattern_dot = re.compile(r'PLN[^\d]*(\d+\.\d{2})')
+        pattern_comma = re.compile(r'PLN[^\d]*(\d+,[^\d]\d{2})')
+
+        # Szukanie informacji o kwocie wydanej na paliwo
+        match_dot = re.search(pattern_dot, result)
+        match_comma = re.search(pattern_comma, result)
+
+        print(result)
+
+        # Jeśli znaleziono kwotę z kropką, wyświetl ją
+        if match_dot:
+            spent_on_fuel_dot = float(match_dot.group(1))
+            print(f'Kwota wydana na paliwo (kropka): {spent_on_fuel_dot} PLN')
+
+        # Jeśli znaleziono kwotę z przecinkiem, wyświetl ją
+        elif match_comma:
+            spent_on_fuel_comma = float(match_comma.group(1).replace(',', '.').replace(' ', ''))
+            print(f'Kwota wydana na paliwo (przecinek): {spent_on_fuel_comma} PLN')
+
+        else:
+            print('Nie znaleziono informacji o kwocie wydanej na paliwo.')
+
     def add_new_fuel_record(self, crud):
         year = self.yearTextBox.get("0.0", 'end-1c')
         month = self.monthTextBox.get("0.0", 'end-1c')
@@ -316,6 +419,7 @@ class MainWindow(ctk.CTk):
         station = self.stationTextBox.get("0.0", 'end-1c')
         crud.createFuelRecord(self.login_window.accountLogin, year, month, day, money, liters, fueltype, station)
         self.loadFuelRecords(crud)
+        self.nrOfRefuelingsLabel.configure(text=str(len(self.fuelRecordPanes)))
 
     def add_fuel_record_callback(self, event):
         self.ninthPane.place(x=20, y=60)
@@ -325,16 +429,22 @@ class MainWindow(ctk.CTk):
         self.seventhPane.place(x=20, y=60)
         self.ninthPane.place_forget()
 
-    def calendar_click_callback(self, event):
+    def calendar_click_callback(self, crud):
         selected_date_str = self.cal.get_date()
         selected_date = datetime.strptime(selected_date_str, "%m/%d/%y")
 
-        day = selected_date.day
-        month = selected_date.month
-        year = selected_date.year
+        day = str(selected_date.day)
+        if len(day)==1:
+            day="0"+day
+        month = str(selected_date.month)
+        if len(month)==1:
+            month="0"+month
+        year = str(selected_date.year)
 
-        self.dateLabel.configure(text=str(day) + "." + str(month) + "." + str(year))
+        self.dateLabel.configure(text=day + "." + month + "." + year)
         self.dateLabel.update()
+
+        self.refuelingsNumberOnDateLabel.configure(text=str(crud.read_nr_of_fuel_records(self.login_window.accountLogin,day,month,year))+"x")
 
     def dash_button_callback(self, event):
         if self.leftPane.cget("width") == 70:
@@ -429,7 +539,7 @@ class MainWindow(ctk.CTk):
         month_names.reverse()
 
         data1 = {'Month': month_names,
-                 '$ spent': [0, 0, 0, 0, 0, 0, 300.4]
+                 '[zł] spent': [0, 0, 0, 0, 0, 0, 300.4]
                  }
         df1 = pd.DataFrame(data1)
 
@@ -437,7 +547,7 @@ class MainWindow(ctk.CTk):
         figure1.subplots_adjust(bottom=0.4)
         ax1 = figure1.add_subplot(111)
         ax1.tick_params(axis='x', labelsize=8)
-        bar1 = FigureCanvasTkAgg(figure1, self.fourthPane)
+        bar1 = FigureCanvasTkAgg(figure1, self.plotPane)
         bar1.get_tk_widget().place(x=0, y=0)
         df1.plot(kind='bar', legend=True, ax=ax1, color="#085f3d")
         ax1.set_xticklabels(month_names, rotation=0)
@@ -450,6 +560,7 @@ class MainWindow(ctk.CTk):
         self.nrOfRefuelingsLabel.configure(text=str(len(self.fuelRecordPanes)))
         self.accountInfo.update()
         self.nrOfRefuelingsLabel.update()
+        self.calendar_click_callback(crud)
 
     def button_enter(self, button):
         button.configure(fg_color="#e3e7e6", text_color="#00a05e")
@@ -515,20 +626,22 @@ class MainWindow(ctk.CTk):
         self.hideFuelComponents()
 
     def hideOverviewComponents(self):
-        self.firstPane.place_forget()
-        self.secondPane.place_forget()
-        self.thirdPane.place_forget()
-        self.fourthPane.place_forget()
-        self.fifthPane.place_forget()
-        self.sixthPane.place_forget()
+        self.carPane.place_forget()
+        self.fuelNumberPane.place_forget()
+        self.servicesNumberPane.place_forget()
+        self.plotPane.place_forget()
+        self.calendarPane.place_forget()
+        self.calendarInfoPane.place_forget()
+        self.sloganPane.place_forget()
 
     def showOverviewComponents(self):
-        self.firstPane.place(x=20, y=60)
-        self.secondPane.place(x=342, y=60)
-        self.thirdPane.place(x=342, y=185)
-        self.fourthPane.place(x=20, y=309)
-        self.fifthPane.place(x=660, y=60)
-        self.sixthPane.place(x=660, y=265)
+        self.carPane.place(x=20, y=60)
+        self.fuelNumberPane.place(x=342, y=60)
+        self.servicesNumberPane.place(x=342, y=185)
+        self.plotPane.place(x=20, y=309)
+        self.calendarPane.place(x=660, y=60)
+        self.calendarInfoPane.place(x=660, y=265)
+        self.sloganPane.place(x=660, y=587)
 
     def showFuelComponents(self):
         self.eighthPane.place(x=860, y=630)
@@ -556,7 +669,7 @@ class MainWindow(ctk.CTk):
         self.dateLabels.clear()
         self.infoLabels.clear()
 
-        year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data = crud.readFuelRecord(
+        year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data = crud.read_fuel_records(
             self.login_window.accountLogin)
 
         fuel_records = list(zip(year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data))
@@ -586,7 +699,7 @@ class MainWindow(ctk.CTk):
                              text_color="#00a05e", width=750, font=("Century Gothic", 17, "bold"), justify=CENTER))
             self.infoLabels.append(
                 ctk.CTkLabel(self.fuelRecordPanes[i],
-                             text=str(money_data[i]) + "$ spent on " + str(liters_data[i]) + "l of " +
+                             text=str(money_data[i]) + "zł spent on " + str(liters_data[i]) + "l of " +
                                   str(fuel_data[i]) + " at " + str(station_data[i]) + " gas station.",
                              fg_color="#e3e7e6",
                              text_color="#555555", width=750, font=("Century Gothic", 18, "bold"), justify=CENTER))

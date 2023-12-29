@@ -24,23 +24,30 @@ class FirebaseCRUD:
         except AttributeError:
             return ""
 
-    def readFuelRecord(self, user_id):
+    def read_fuel_records(self, user_id):
         try:
-            year_data=[]
-            month_data=[]
-            day_data=[]
-            money_data=[]
-            liters_data=[]
-            fuel_data=[]
-            station_data=[]
+            year_data = []
+            month_data = []
+            day_data = []
+            money_data = []
+            liters_data = []
+            fuel_data = []
+            station_data = []
             for key in self.database.child('users').child(user_id).child("fuel_records").get().val():
-                year_info = self.database.child('users').child(user_id).child("fuel_records").child(key).get().val().get("year")
-                month_info = self.database.child('users').child(user_id).child("fuel_records").child(key).get().val().get("month")
-                day_info = self.database.child('users').child(user_id).child("fuel_records").child(key).get().val().get("day")
-                money_info = self.database.child('users').child(user_id).child("fuel_records").child(key).get().val().get("money_spent")
-                liters_info = self.database.child('users').child(user_id).child("fuel_records").child(key).get().val().get("liters_refueled")
-                fuel_info = self.database.child('users').child(user_id).child("fuel_records").child(key).get().val().get("fuel_type")
-                station_info = self.database.child('users').child(user_id).child("fuel_records").child(key).get().val().get("gas_station")
+                year_info = self.database.child('users').child(user_id).child("fuel_records").child(
+                    key).get().val().get("year")
+                month_info = self.database.child('users').child(user_id).child("fuel_records").child(
+                    key).get().val().get("month")
+                day_info = self.database.child('users').child(user_id).child("fuel_records").child(key).get().val().get(
+                    "day")
+                money_info = self.database.child('users').child(user_id).child("fuel_records").child(
+                    key).get().val().get("money_spent")
+                liters_info = self.database.child('users').child(user_id).child("fuel_records").child(
+                    key).get().val().get("liters_refueled")
+                fuel_info = self.database.child('users').child(user_id).child("fuel_records").child(
+                    key).get().val().get("fuel_type")
+                station_info = self.database.child('users').child(user_id).child("fuel_records").child(
+                    key).get().val().get("gas_station")
                 year_data.append(year_info)
                 month_data.append(month_info)
                 day_data.append(day_info)
@@ -48,7 +55,24 @@ class FirebaseCRUD:
                 liters_data.append(liters_info)
                 fuel_data.append(fuel_info)
                 station_data.append(station_info)
-            return year_data,month_data,day_data,money_data,liters_data,fuel_data,station_data
+            return year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data
+        except AttributeError:
+            return ""
+
+    def read_nr_of_fuel_records(self, user_id, day, month, year):
+        try:
+            nr_of_fuel_records = 0
+            for key in self.database.child('users').child(user_id).child("fuel_records").get().val():
+                year_info = self.database.child('users').child(user_id).child("fuel_records").child(
+                    key).get().val().get("year")
+                month_info = self.database.child('users').child(user_id).child("fuel_records").child(
+                    key).get().val().get("month")
+                day_info = self.database.child('users').child(user_id).child("fuel_records").child(
+                    key).get().val().get("day")
+
+                if day == day_info and month == month_info and year == year_info:
+                    nr_of_fuel_records = nr_of_fuel_records + 1
+            return nr_of_fuel_records
         except AttributeError:
             return ""
 
