@@ -4,15 +4,18 @@ import scripts.LoginWindow
 import scripts.RegisterWindow
 import scripts.FirebaseCRUD
 import scripts.MainWindow
+import scripts.LoadingWindow
 from PIL import Image
 
-root = ctk.CTk()
-root2 = ctk.CTkToplevel()
-root3 = ctk.CTkToplevel()
+login_window = ctk.CTk()
+loading_window = ctk.CTkToplevel()
+register_window = ctk.CTkToplevel()
+main_window = ctk.CTkToplevel()
 
-root.withdraw()
-root2.withdraw()
-root3.withdraw()
+login_window.withdraw()
+loading_window.withdraw()
+register_window.withdraw()
+main_window.withdraw()
 
 mainImage = ctk.CTkImage(light_image=Image.open("images/mainImg.png"), size=(45, 45))
 mainImage2 = ctk.CTkImage(light_image=Image.open("images/mainImg2.png"), size=(45, 45))
@@ -32,58 +35,66 @@ receiptImage = Image.open("images/receipt.jpg")
 
 crud = scripts.FirebaseCRUD.FirebaseCRUD()
 
-app = scripts.LoginWindow.LoginWindow(root, root2, root3, mainImage, crud)
-app2 = scripts.RegisterWindow.RegisterWindow(root2, root, mainImage, crud)
-app3 = scripts.MainWindow.MainWindow(root3, app, mainImage2, accountInfoImage,dashboardImage,accountImage,settingsImage,logoutImage,fuelImage,serviceImage,carImage,plusImage,backImage,receiptImage,crud)
+login_app = scripts.LoginWindow.LoginWindow(login_window, register_window, loading_window, mainImage, crud)
+loading_app = scripts.LoadingWindow.LoadingWindow(loading_window,login_app, main_window, mainImage,crud)
+register_app = scripts.RegisterWindow.RegisterWindow(register_window, login_window, mainImage, crud)
+main_app = scripts.MainWindow.MainWindow(main_window, login_app, login_window, mainImage2, accountInfoImage, dashboardImage, accountImage, settingsImage, logoutImage, fuelImage, serviceImage, carImage, plusImage, backImage, receiptImage, crud)
 
 
 def main():
-    root.geometry("400x540")
-    root.title("MileageMate Login Page")
-    root._set_appearance_mode("light")
+    login_window.geometry("400x540")
+    login_window.title("MileageMate Login Page")
+    login_window._set_appearance_mode("light")
     w = 400
     h = 540
-    ws = root.winfo_screenwidth()
-    hs = root.winfo_screenheight()
+    ws = login_window.winfo_screenwidth()
+    hs = login_window.winfo_screenheight()
     x = (ws / 2) - (w / 2)
     y = (hs / 2) - (h / 2)
-    root.geometry('+%d+%d' % (x, y))
-    root.config(background="white")
-    root.resizable(False, False)
+    login_window.geometry('+%d+%d' % (x, y))
+    login_window.config(background="white")
+    login_window.resizable(False, False)
 
-    root2.geometry("600x540")
-    root2.title("MileageMate Register Page")
-    root2._set_appearance_mode("light")
+    loading_window.title("")
+    loading_window._set_appearance_mode("light")
+    loading_window.config(background="white")
+    loading_window.resizable(False, False)
+
+    register_window.geometry("600x540")
+    register_window.title("MileageMate Register Page")
+    register_window._set_appearance_mode("light")
     w = 600
     h = 540
-    ws = root2.winfo_screenwidth()
-    hs = root2.winfo_screenheight()
+    ws = register_window.winfo_screenwidth()
+    hs = register_window.winfo_screenheight()
     x = (ws / 2) - (w / 2)
     y = (hs / 2) - (h / 2)
-    root2.geometry('+%d+%d' % (x, y))
-    root2.config(background="white")
-    root2.resizable(False, False)
+    register_window.geometry('+%d+%d' % (x, y))
+    register_window.config(background="white")
+    register_window.resizable(False, False)
 
-    root3.geometry("1200x700")
-    root3.title("MileageMate")
-    root3._set_appearance_mode("light")
+    main_window.geometry("1200x700")
+    main_window.title("MileageMate")
+    main_window._set_appearance_mode("light")
     w = 1200
     h = 700
-    ws = root3.winfo_screenwidth()
-    hs = root3.winfo_screenheight()
+    ws = main_window.winfo_screenwidth()
+    hs = main_window.winfo_screenheight()
     x = (ws / 2) - (w / 2)
     y = (hs / 2) - (h / 2)
-    root3.geometry('+%d+%d' % (x, y))
-    root3.config(background="white")
-    root3.resizable(False, False)
+    main_window.geometry('+%d+%d' % (x, y))
+    main_window.config(background="white")
+    main_window.resizable(False, False)
 
-    root.protocol("WM_DELETE_WINDOW", on_closing)
-    root2.protocol("WM_DELETE_WINDOW", on_closing)
-    root3.protocol("WM_DELETE_WINDOW", on_closing)
-    root.deiconify()
-    root.update()
-    root2.update()
-    root3.update()
+    login_window.protocol("WM_DELETE_WINDOW", on_closing)
+    register_window.protocol("WM_DELETE_WINDOW", on_closing)
+    main_window.protocol("WM_DELETE_WINDOW", on_closing)
+    loading_window.protocol("WM_DELETE_WINDOW", on_closing)
+    login_window.deiconify()
+    login_window.update()
+    loading_window.update()
+    register_window.update()
+    main_window.update()
     tk.mainloop()
 
 

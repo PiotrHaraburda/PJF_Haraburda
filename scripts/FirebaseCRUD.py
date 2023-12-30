@@ -1,4 +1,5 @@
 import scripts.FirebaseConnection
+from datetime import datetime, timedelta
 
 
 class FirebaseCRUD:
@@ -17,6 +18,12 @@ class FirebaseCRUD:
         user_id = login
         self.database.child('users').child(user_id).child('fuel_records').push(data)
 
+    def createServiceRecord(self, login, year, month, day, money_spent, service_type, if_successful, repair_shop):
+        data = {'year': year, 'month': month, 'day': day, "money_spent": money_spent,
+                "service_type": service_type, "if_successful": if_successful, "repair_shop": repair_shop}
+        user_id = login
+        self.database.child('users').child(user_id).child('service_records').push(data)
+
     def readUser(self, user_id, desired_item):
         try:
             users_info = self.database.child('users').child(user_id)
@@ -25,14 +32,14 @@ class FirebaseCRUD:
             return ""
 
     def read_fuel_records(self, user_id):
+        year_data = []
+        month_data = []
+        day_data = []
+        money_data = []
+        liters_data = []
+        fuel_data = []
+        station_data = []
         try:
-            year_data = []
-            month_data = []
-            day_data = []
-            money_data = []
-            liters_data = []
-            fuel_data = []
-            station_data = []
             for key in self.database.child('users').child(user_id).child("fuel_records").get().val():
                 year_info = self.database.child('users').child(user_id).child("fuel_records").child(
                     key).get().val().get("year")
@@ -57,11 +64,51 @@ class FirebaseCRUD:
                 station_data.append(station_info)
             return year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data
         except AttributeError:
-            return ""
+            return year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data
+        except TypeError:
+            return year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data
+
+    def read_services_records(self, user_id):
+        year_data = []
+        month_data = []
+        day_data = []
+        money_data = []
+        serviceType_data = []
+        ifSuccessful_data = []
+        repairShop_data = []
+        try:
+            for key in self.database.child('users').child(user_id).child("service_records").get().val():
+                year_info = self.database.child('users').child(user_id).child("service_records").child(
+                    key).get().val().get("year")
+                month_info = self.database.child('users').child(user_id).child("service_records").child(
+                    key).get().val().get("month")
+                day_info = self.database.child('users').child(user_id).child("service_records").child(
+                    key).get().val().get(
+                    "day")
+                money_info = self.database.child('users').child(user_id).child("service_records").child(
+                    key).get().val().get("money_spent")
+                serviceType_info = self.database.child('users').child(user_id).child("service_records").child(
+                    key).get().val().get("service_type")
+                ifSuccessful_info = self.database.child('users').child(user_id).child("service_records").child(
+                    key).get().val().get("if_successful")
+                repairShop_info = self.database.child('users').child(user_id).child("service_records").child(
+                    key).get().val().get("repair_shop")
+                year_data.append(year_info)
+                month_data.append(month_info)
+                day_data.append(day_info)
+                money_data.append(money_info)
+                serviceType_data.append(serviceType_info)
+                ifSuccessful_data.append(ifSuccessful_info)
+                repairShop_data.append(repairShop_info)
+            return year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data
+        except AttributeError:
+            return year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data
+        except TypeError:
+            return year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data
 
     def read_nr_of_fuel_records(self, user_id, day, month, year):
+        nr_of_fuel_records = 0
         try:
-            nr_of_fuel_records = 0
             for key in self.database.child('users').child(user_id).child("fuel_records").get().val():
                 year_info = self.database.child('users').child(user_id).child("fuel_records").child(
                     key).get().val().get("year")
@@ -74,7 +121,81 @@ class FirebaseCRUD:
                     nr_of_fuel_records = nr_of_fuel_records + 1
             return nr_of_fuel_records
         except AttributeError:
-            return ""
+            return nr_of_fuel_records
+        except TypeError:
+            return nr_of_fuel_records
+
+    def read_nr_of_service_records(self, user_id, day, month, year):
+        nr_of_service_records = 0
+        try:
+            for key in self.database.child('users').child(user_id).child("service_records").get().val():
+                year_info = self.database.child('users').child(user_id).child("service_records").child(
+                    key).get().val().get("year")
+                month_info = self.database.child('users').child(user_id).child("service_records").child(
+                    key).get().val().get("month")
+                day_info = self.database.child('users').child(user_id).child("service_records").child(
+                    key).get().val().get("day")
+
+                if day == day_info and month == month_info and year == year_info:
+                    nr_of_service_records = nr_of_service_records + 1
+            return nr_of_service_records
+        except AttributeError:
+            return nr_of_service_records
+        except TypeError:
+            return nr_of_service_records
+
+    def read_money_spent(self, user_id):
+        year_data = []
+        month_data = []
+        day_data = []
+        money_data = []
+
+        try:
+            current_date = datetime.now()
+            recent_month_limit = current_date - timedelta(days=30 * 7)  # 7 miesięcy wstecz
+            service_records = self.database.child('users').child(user_id).child("service_records").get().val()
+            if service_records is not None:
+                for key in service_records:
+                    year_info = int(self.database.child('users').child(user_id).child("service_records").child(
+                        key).get().val().get("year"))
+                    month_info = int(self.database.child('users').child(user_id).child("service_records").child(
+                        key).get().val().get("month"))
+                    day_info = int(self.database.child('users').child(user_id).child("service_records").child(
+                        key).get().val().get("day"))
+                    money_info = int(self.database.child('users').child(user_id).child("service_records").child(
+                        key).get().val().get("money_spent"))
+
+                    record_date = datetime(year_info, month_info, day_info)
+                    if record_date >= recent_month_limit:
+                        year_data.append(year_info)
+                        month_data.append(month_info)
+                        day_data.append(day_info)
+                        money_data.append(money_info)
+
+            fuel_records = self.database.child('users').child(user_id).child("fuel_records").get().val()
+            if fuel_records is not None:
+                for key in fuel_records:
+                    year_info = int(self.database.child('users').child(user_id).child("fuel_records").child(
+                        key).get().val().get("year"))
+                    month_info = int(self.database.child('users').child(user_id).child("fuel_records").child(
+                        key).get().val().get("month"))
+                    day_info = int(
+                        self.database.child('users').child(user_id).child("fuel_records").child(key).get().val().get(
+                            "day"))
+                    money_info = int(self.database.child('users').child(user_id).child("fuel_records").child(
+                        key).get().val().get("money_spent"))
+
+                    record_date = datetime(year_info, month_info, day_info)
+                    if record_date >= recent_month_limit:
+                        year_data.append(year_info)
+                        month_data.append(month_info)
+                        day_data.append(day_info)
+                        money_data.append(money_info)
+
+            return month_data, money_data
+
+        except AttributeError:
+            return month_data, money_data
 
     def updateUser(self):
         user_id = '1234536'

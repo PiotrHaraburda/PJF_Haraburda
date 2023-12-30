@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from tkinter import *
 import customtkinter as ctk
 import pytesseract
+import requests
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import pandas as pd
 from tkcalendar import Calendar
@@ -16,15 +17,22 @@ whichButtonPressed = 1
 
 class MainWindow(ctk.CTk):
 
-    def __init__(self, master, login_window, main_image2, account_info_image, dashboard_image, account_image,
+    def __init__(self, master, login_app, login_window, main_image2, account_info_image, dashboard_image, account_image,
                  settings_image,
-                 logout_image, fuel_image, service_image, car_image, plus_image, back_image,receipt_image, crud, **kwargs):
+                 logout_image, fuel_image, service_image, car_image, plus_image, back_image, receipt_image, crud,
+                 **kwargs):
         super().__init__(**kwargs)
         self.master = master
-        self.login_window = login_window
+        self.login_app = login_app
+
         self.fuelRecordPanes = []
         self.dateLabels = []
         self.infoLabels = []
+
+        self.serviceRecordPanes = []
+        self.dateLabels2 = []
+        self.infoLabels2 = []
+        self.successfulLabels = []
 
         self.leftPane = ctk.CTkFrame(self.master, width=270, height=700, fg_color="#00a05e", bg_color="#e3e7e6",
                                      corner_radius=15)
@@ -87,12 +95,31 @@ class MainWindow(ctk.CTk):
         self.carsButton.bind('<Button-1>', self.cars_button_callback)
         self.nearbyButton.bind('<Button-1>', self.nearby_button_callback)
 
+        self.dashboardImage = ctk.CTkLabel(self.leftStrip, image=dashboard_image, text="", cursor="hand2")
+        self.dashboardImage.place(x=16, y=150)
+        self.dashboardImage.bind('<Button-1>', self.dash_button_callback)
+
+        self.accountImage = ctk.CTkLabel(self.leftStrip, image=account_image, text="", cursor="hand2")
+        self.accountImage.place(x=16, y=250)
+        self.accountImage.bind('<Button-1>', self.acc_button_callback)
+
+        self.settingsImage = ctk.CTkLabel(self.leftStrip, image=settings_image, text="", cursor="hand2")
+        self.settingsImage.place(x=16, y=350)
+        self.settingsImage.bind('<Button-1>', self.sett_button_callback)
+
+        self.logoutImage = ctk.CTkLabel(self.leftStrip, image=logout_image, text="", cursor="hand2")
+        self.logoutImage.place(x=19, y=450)
+        self.logoutImage.bind('<Button-1>', self.log_button_callback)
+
+        self.selectedTabIndicator = ctk.CTkFrame(self.leftStrip, width=5, height=40, fg_color="white")
+        self.selectedTabIndicator.place(x=4, y=148)
+
         self.accountInfo = ctk.CTkLabel(self.mainPane, text="<Login>", font=("Century Gothic", 15, "bold"), height=20,
                                         fg_color="#e3e7e6", bg_color="#e3e7e6", text_color="#555555")
-        self.accountInfo.place(x=834, y=10)
+        self.accountInfo.place(x=44, y=18)
 
         self.accInfoImage = ctk.CTkLabel(self.mainPane, image=account_info_image, text="")
-        self.accInfoImage.place(x=810, y=5)
+        self.accInfoImage.place(x=20, y=13)
 
         self.carPane = ctk.CTkFrame(self.mainPane, width=300, height=230, corner_radius=5, fg_color="white",
                                     bg_color="#e3e7e6")
@@ -135,7 +162,7 @@ class MainWindow(ctk.CTk):
         self.nrOfServicesLabel = ctk.CTkLabel(self.servicesNumberPane, text="99",
                                               font=("Century Gothic", 30, "bold"),
                                               fg_color="white", text_color="#00a05e")
-        self.nrOfServicesLabel.place(x=45, y=20)
+        self.nrOfServicesLabel.place(x=45, y=18)
 
         self.serviceLabel = ctk.CTkLabel(self.servicesNumberPane, text="Services made",
                                          font=("Century Gothic", 15, "bold"),
@@ -148,8 +175,6 @@ class MainWindow(ctk.CTk):
         self.plotPane = ctk.CTkFrame(self.mainPane, width=622, height=375, corner_radius=5, fg_color="white",
                                      bg_color="#e3e7e6")
         self.plotPane.place(x=20, y=309)
-
-        self.make_plot()
 
         self.calendarPane = ctk.CTkFrame(self.mainPane, width=250, height=200, corner_radius=5, fg_color="white",
                                          bg_color="#e3e7e6")
@@ -189,15 +214,19 @@ class MainWindow(ctk.CTk):
                                       fg_color="white", text_color="#555555")
         self.dateLabel.place(x=128, y=20)
 
-        self.refuelingsNumberOnDateLabel=ctk.CTkLabel(self.calendarInfoPane, text="0x", font=("Century Gothic", 19, "bold"),
-                                                      fg_color="white", text_color="#00a05e", width=250, justify=CENTER)
+        self.refuelingsNumberOnDateLabel = ctk.CTkLabel(self.calendarInfoPane, text="0x",
+                                                        font=("Century Gothic", 19, "bold"),
+                                                        fg_color="white", text_color="#00a05e", width=250,
+                                                        justify=CENTER)
         self.refuelingsNumberOnDateLabel.place(x=0, y=95)
 
-        self.refuelingsOnDateLabel = ctk.CTkLabel(self.calendarInfoPane, text="Refuelings made", font=("Century Gothic", 15, "bold"),
+        self.refuelingsOnDateLabel = ctk.CTkLabel(self.calendarInfoPane, text="Refuelings made",
+                                                  font=("Century Gothic", 15, "bold"),
                                                   fg_color="white", text_color="#555555", width=250, justify=CENTER)
         self.refuelingsOnDateLabel.place(x=0, y=120)
 
-        self.servicesNumberOnDateLabel = ctk.CTkLabel(self.calendarInfoPane, text="0x", font=("Century Gothic", 19, "bold"),
+        self.servicesNumberOnDateLabel = ctk.CTkLabel(self.calendarInfoPane, text="0x",
+                                                      font=("Century Gothic", 19, "bold"),
                                                       fg_color="white", text_color="#00a05e", width=250,
                                                       justify=CENTER)
         self.servicesNumberOnDateLabel.place(x=0, y=180)
@@ -208,93 +237,97 @@ class MainWindow(ctk.CTk):
         self.servicesOnDateLabel.place(x=0, y=205)
 
         self.sloganPane = ctk.CTkFrame(self.mainPane, width=250, height=96, corner_radius=5, fg_color="white",
-                                             bg_color="#e3e7e6")
+                                       bg_color="#e3e7e6")
         self.sloganPane.place(x=660, y=587)
 
         self.sloganLabel = ctk.CTkLabel(self.sloganPane,
-                                      text="MileageMate:\nTrack Auto Costs Effortlessly!", font=("Century Gothic", 13, "bold"),
-                                      fg_color="white", text_color="#00a05e",width=250,justify=CENTER)
+                                        text="MileageMate:\nTrack Auto Costs Effortlessly!",
+                                        font=("Century Gothic", 13, "bold", "italic"),
+                                        fg_color="white", text_color="#00a05e", width=250, justify=CENTER)
         self.sloganLabel.place(x=0, y=30)
 
-        self.seventhPane = ctk.CTkScrollableFrame(self.mainPane, width=800, height=610, corner_radius=5,
-                                                  fg_color="white",
-                                                  bg_color="#e3e7e6")
+        self.fuelListPane = ctk.CTkScrollableFrame(self.mainPane, width=800, height=610, corner_radius=5,
+                                                   fg_color="white",
+                                                   bg_color="#e3e7e6")
 
-        self.fuelPaneHeaderLabel = ctk.CTkLabel(self.seventhPane, text="Fuel purchase history", width=800,
+        self.fuelPaneHeaderLabel = ctk.CTkLabel(self.fuelListPane, text="Fuel purchase history", width=800,
                                                 fg_color="white", text_color="#00a05e",
                                                 font=("Century Gothic", 20, "bold"))
         self.fuelPaneHeaderLabel.grid(row=0, column=0, pady=12)
 
-        self.eighthPane = ctk.CTkFrame(self.mainPane, width=50, height=50, corner_radius=5, fg_color="#00a05e",
-                                       bg_color="white")
+        self.addFuelButtonPane = ctk.CTkFrame(self.mainPane, width=50, height=50, corner_radius=5, fg_color="#00a05e",
+                                              bg_color="white")
 
-        self.plusImage = ctk.CTkLabel(self.eighthPane, image=plus_image, text="", cursor="hand2")
+        self.plusImage = ctk.CTkLabel(self.addFuelButtonPane, image=plus_image, text="", cursor="hand2")
         self.plusImage.place(x=1, y=1)
         self.plusImage.bind('<Button-1>', self.add_fuel_record_callback)
 
-        self.ninthPane = ctk.CTkFrame(self.mainPane, width=890, height=625, corner_radius=5, fg_color="white",
-                                      bg_color="#e3e7e6")
+        self.addFuelPane = ctk.CTkFrame(self.mainPane, width=890, height=625, corner_radius=5, fg_color="white",
+                                        bg_color="#e3e7e6")
 
-        self.backImage = ctk.CTkLabel(self.ninthPane, image=back_image, text="", cursor="hand2")
+        self.backImage = ctk.CTkLabel(self.addFuelPane, image=back_image, text="", cursor="hand2")
         self.backImage.place(x=5, y=15)
         self.backImage.bind('<Button-1>', lambda event, crud=crud: self.add_fuel_record_back_callback(crud))
 
-        self.addNewFuelRecordLabel = ctk.CTkLabel(self.ninthPane, text="Adding new fuel purchase record",
+        self.addNewFuelRecordLabel = ctk.CTkLabel(self.addFuelPane, text="Adding new fuel purchase record",
                                                   text_color="#00a05e", width=810,
                                                   fg_color="white",
                                                   font=("Century Gothic", 20, "bold"), justify=CENTER)
         self.addNewFuelRecordLabel.place(x=40, y=20)
 
-        self.dayTextBox = ctk.CTkTextbox(self.ninthPane, width=310, height=50, corner_radius=5, fg_color="#dbfde7",
+        self.dayTextBox = ctk.CTkTextbox(self.addFuelPane, width=310, height=50, corner_radius=5, fg_color="#dbfde7",
                                          bg_color="white", text_color="#555555", font=("Trebuchet", 19, "bold"),
                                          border_spacing=10)
 
-        self.monthTextBox = ctk.CTkTextbox(self.ninthPane, width=310, height=50, corner_radius=5, fg_color="#dbfde7",
+        self.monthTextBox = ctk.CTkTextbox(self.addFuelPane, width=310, height=50, corner_radius=5, fg_color="#dbfde7",
                                            bg_color="white", text_color="#555555", font=("Trebuchet", 19, "bold"),
                                            border_spacing=10)
 
-        self.yearTextBox = ctk.CTkTextbox(self.ninthPane, width=310, height=50, corner_radius=5, fg_color="#dbfde7",
+        self.yearTextBox = ctk.CTkTextbox(self.addFuelPane, width=310, height=50, corner_radius=5, fg_color="#dbfde7",
                                           bg_color="white", text_color="#555555", font=("Trebuchet", 19, "bold"),
                                           border_spacing=10)
 
-        self.moneyTextBox = ctk.CTkTextbox(self.ninthPane, width=310, height=50, corner_radius=5, fg_color="#dbfde7",
+        self.moneyTextBox = ctk.CTkTextbox(self.addFuelPane, width=310, height=50, corner_radius=5, fg_color="#dbfde7",
                                            bg_color="white", text_color="#555555", font=("Trebuchet", 19, "bold"),
                                            border_spacing=10)
 
-        self.litersTextBox = ctk.CTkTextbox(self.ninthPane, width=310, height=50, corner_radius=5, fg_color="#dbfde7",
+        self.litersTextBox = ctk.CTkTextbox(self.addFuelPane, width=310, height=50, corner_radius=5, fg_color="#dbfde7",
                                             bg_color="white", text_color="#555555", font=("Trebuchet", 19, "bold"),
                                             border_spacing=10)
 
-        self.fueltypeTextBox = ctk.CTkTextbox(self.ninthPane, width=310, height=50, corner_radius=5, fg_color="#dbfde7",
+        self.fueltypeTextBox = ctk.CTkTextbox(self.addFuelPane, width=310, height=50, corner_radius=5,
+                                              fg_color="#dbfde7",
                                               bg_color="white", text_color="#555555", font=("Trebuchet", 19, "bold"),
                                               border_spacing=10)
 
-        self.stationTextBox = ctk.CTkTextbox(self.ninthPane, width=310, height=50, corner_radius=5, fg_color="#dbfde7",
+        self.stationTextBox = ctk.CTkTextbox(self.addFuelPane, width=310, height=50, corner_radius=5,
+                                             fg_color="#dbfde7",
                                              bg_color="white", text_color="#555555", font=("Trebuchet", 19, "bold"),
                                              border_spacing=10)
 
-        self.dayLabel = ctk.CTkLabel(self.ninthPane, text="Day:", text_color="#555555", font=("Trebuchet", 15, "bold"),
+        self.dayLabel = ctk.CTkLabel(self.addFuelPane, text="Day:", text_color="#555555",
+                                     font=("Trebuchet", 15, "bold"),
                                      bg_color="white")
-        self.monthLabel = ctk.CTkLabel(self.ninthPane, text="Month:", text_color="#555555",
+        self.monthLabel = ctk.CTkLabel(self.addFuelPane, text="Month:", text_color="#555555",
                                        font=("Trebuchet", 15, "bold"),
                                        bg_color="white")
-        self.yearLabel = ctk.CTkLabel(self.ninthPane, text="Year:", text_color="#555555",
+        self.yearLabel = ctk.CTkLabel(self.addFuelPane, text="Year:", text_color="#555555",
                                       font=("Trebuchet", 15, "bold"),
                                       bg_color="white")
-        self.moneyLabel = ctk.CTkLabel(self.ninthPane, text="Money Spent:", text_color="#555555",
+        self.moneyLabel = ctk.CTkLabel(self.addFuelPane, text="Money Spent:", text_color="#555555",
                                        font=("Trebuchet", 15, "bold"),
                                        bg_color="white")
-        self.litersLabel = ctk.CTkLabel(self.ninthPane, text="Liters Refueled:", text_color="#555555",
+        self.litersLabel = ctk.CTkLabel(self.addFuelPane, text="Liters Refueled:", text_color="#555555",
                                         font=("Trebuchet", 15, "bold"),
                                         bg_color="white")
-        self.fueltypeLabel = ctk.CTkLabel(self.ninthPane, text="Fuel Type:", text_color="#555555",
+        self.fueltypeLabel = ctk.CTkLabel(self.addFuelPane, text="Fuel Type:", text_color="#555555",
                                           font=("Trebuchet", 15, "bold"),
                                           bg_color="white")
-        self.stationLabel = ctk.CTkLabel(self.ninthPane, text="Gas Station:", text_color="#555555",
+        self.stationLabel = ctk.CTkLabel(self.addFuelPane, text="Gas Station:", text_color="#555555",
                                          font=("Trebuchet", 15, "bold"),
                                          bg_color="white")
 
-        self.addNewFuelRecordButton = ctk.CTkButton(self.ninthPane, text="Add new record", fg_color="white",
+        self.addNewFuelRecordButton = ctk.CTkButton(self.addFuelPane, text="Add new record", fg_color="white",
                                                     font=("Trebuchet", 14, "bold"),
                                                     width=310, height=35, corner_radius=5, hover_color="#dbdbd9",
                                                     bg_color="white", border_width=1, text_color="#555555",
@@ -318,32 +351,261 @@ class MainWindow(ctk.CTk):
 
         self.addNewFuelRecordButton.place(x=290, y=550)
 
-        self.dashboardImage = ctk.CTkLabel(self.leftStrip, image=dashboard_image, text="", cursor="hand2")
-        self.dashboardImage.place(x=16, y=150)
-        self.dashboardImage.bind('<Button-1>', self.dash_button_callback)
+        self.servicesListPane = ctk.CTkScrollableFrame(self.mainPane, width=800, height=610, corner_radius=5,
+                                                       fg_color="white",
+                                                       bg_color="#e3e7e6")
 
-        self.accountImage = ctk.CTkLabel(self.leftStrip, image=account_image, text="", cursor="hand2")
-        self.accountImage.place(x=16, y=250)
-        self.accountImage.bind('<Button-1>', self.acc_button_callback)
+        self.servicesPaneHeaderLabel = ctk.CTkLabel(self.servicesListPane, text="Services history", width=800,
+                                                    fg_color="white", text_color="#00a05e",
+                                                    font=("Century Gothic", 20, "bold"))
+        self.servicesPaneHeaderLabel.grid(row=0, column=0, pady=12)
 
-        self.settingsImage = ctk.CTkLabel(self.leftStrip, image=settings_image, text="", cursor="hand2")
-        self.settingsImage.place(x=16, y=350)
-        self.settingsImage.bind('<Button-1>', self.sett_button_callback)
+        self.addServicesButtonPane = ctk.CTkFrame(self.mainPane, width=50, height=50, corner_radius=5,
+                                                  fg_color="#00a05e",
+                                                  bg_color="white")
 
-        self.logoutImage = ctk.CTkLabel(self.leftStrip, image=logout_image, text="", cursor="hand2")
-        self.logoutImage.place(x=19, y=450)
-        self.logoutImage.bind('<Button-1>', self.log_button_callback)
+        self.plusImage = ctk.CTkLabel(self.addServicesButtonPane, image=plus_image, text="", cursor="hand2")
+        self.plusImage.place(x=1, y=1)
+        self.plusImage.bind('<Button-1>', self.add_service_record_callback)
 
-        self.selectedTabIndicator = ctk.CTkFrame(self.leftStrip, width=5, height=40, fg_color="white")
-        self.selectedTabIndicator.place(x=4, y=148)
+        self.addServicesPane = ctk.CTkFrame(self.mainPane, width=890, height=625, corner_radius=5, fg_color="white",
+                                            bg_color="#e3e7e6")
+
+        self.backImage = ctk.CTkLabel(self.addServicesPane, image=back_image, text="", cursor="hand2")
+        self.backImage.place(x=5, y=15)
+        self.backImage.bind('<Button-1>', lambda event, crud=crud: self.add_service_record_back_callback(crud))
+
+        self.addNewServiceRecordLabel = ctk.CTkLabel(self.addServicesPane, text="Adding new service record",
+                                                     text_color="#00a05e", width=810,
+                                                     fg_color="white",
+                                                     font=("Century Gothic", 20, "bold"), justify=CENTER)
+        self.addNewServiceRecordLabel.place(x=40, y=20)
+
+        self.dayTextBox2 = ctk.CTkTextbox(self.addServicesPane, width=310, height=50, corner_radius=5,
+                                          fg_color="#dbfde7",
+                                          bg_color="white", text_color="#555555", font=("Trebuchet", 19, "bold"),
+                                          border_spacing=10)
+
+        self.monthTextBox2 = ctk.CTkTextbox(self.addServicesPane, width=310, height=50, corner_radius=5,
+                                            fg_color="#dbfde7",
+                                            bg_color="white", text_color="#555555", font=("Trebuchet", 19, "bold"),
+                                            border_spacing=10)
+
+        self.yearTextBox2 = ctk.CTkTextbox(self.addServicesPane, width=310, height=50, corner_radius=5,
+                                           fg_color="#dbfde7",
+                                           bg_color="white", text_color="#555555", font=("Trebuchet", 19, "bold"),
+                                           border_spacing=10)
+
+        self.moneyTextBox2 = ctk.CTkTextbox(self.addServicesPane, width=310, height=50, corner_radius=5,
+                                            fg_color="#dbfde7",
+                                            bg_color="white", text_color="#555555", font=("Trebuchet", 19, "bold"),
+                                            border_spacing=10)
+
+        self.serviceTypeTextBox = ctk.CTkTextbox(self.addServicesPane, width=310, height=50, corner_radius=5,
+                                                 fg_color="#dbfde7",
+                                                 bg_color="white", text_color="#555555", font=("Trebuchet", 19, "bold"),
+                                                 border_spacing=10)
+
+        self.ifSuccessfulTextBox = ctk.CTkTextbox(self.addServicesPane, width=310, height=50, corner_radius=5,
+                                                  fg_color="#dbfde7",
+                                                  bg_color="white", text_color="#555555",
+                                                  font=("Trebuchet", 19, "bold"),
+                                                  border_spacing=10)
+
+        self.repairShopTextBox = ctk.CTkTextbox(self.addServicesPane, width=310, height=50, corner_radius=5,
+                                                fg_color="#dbfde7",
+                                                bg_color="white", text_color="#555555", font=("Trebuchet", 19, "bold"),
+                                                border_spacing=10)
+
+        self.dayLabel2 = ctk.CTkLabel(self.addServicesPane, text="Day:", text_color="#555555",
+                                      font=("Trebuchet", 15, "bold"),
+                                      bg_color="white")
+        self.monthLabel2 = ctk.CTkLabel(self.addServicesPane, text="Month:", text_color="#555555",
+                                        font=("Trebuchet", 15, "bold"),
+                                        bg_color="white")
+        self.yearLabel2 = ctk.CTkLabel(self.addServicesPane, text="Year:", text_color="#555555",
+                                       font=("Trebuchet", 15, "bold"),
+                                       bg_color="white")
+        self.moneyLabel2 = ctk.CTkLabel(self.addServicesPane, text="Money Spent:", text_color="#555555",
+                                        font=("Trebuchet", 15, "bold"),
+                                        bg_color="white")
+        self.serviceTypeLabel = ctk.CTkLabel(self.addServicesPane, text="Service Type:", text_color="#555555",
+                                             font=("Trebuchet", 15, "bold"),
+                                             bg_color="white")
+        self.ifSuccessfulLabel = ctk.CTkLabel(self.addServicesPane, text="Was Successful:", text_color="#555555",
+                                              font=("Trebuchet", 15, "bold"),
+                                              bg_color="white")
+        self.repairShopLabel = ctk.CTkLabel(self.addServicesPane, text="Repair Shop:", text_color="#555555",
+                                            font=("Trebuchet", 15, "bold"),
+                                            bg_color="white")
+
+        self.addNewServiceRecordButton = ctk.CTkButton(self.addServicesPane, text="Add new record", fg_color="white",
+                                                       font=("Trebuchet", 14, "bold"),
+                                                       width=310, height=35, corner_radius=5, hover_color="#dbdbd9",
+                                                       bg_color="white", border_width=1, text_color="#555555",
+                                                       command=lambda: self.add_new_service_record(crud))
+
+        self.dayTextBox2.place(x=90, y=120)
+        self.monthTextBox2.place(x=90, y=220)
+        self.yearTextBox2.place(x=90, y=320)
+        self.moneyTextBox2.place(x=90, y=420)
+        self.serviceTypeTextBox.place(x=490, y=120)
+        self.ifSuccessfulTextBox.place(x=490, y=220)
+        self.repairShopTextBox.place(x=490, y=320)
+
+        self.dayLabel2.place(x=90, y=90)
+        self.monthLabel2.place(x=90, y=190)
+        self.yearLabel2.place(x=90, y=290)
+        self.moneyLabel2.place(x=90, y=390)
+        self.serviceTypeLabel.place(x=490, y=90)
+        self.ifSuccessfulLabel.place(x=490, y=190)
+        self.repairShopLabel.place(x=490, y=290)
+
+        self.addNewServiceRecordButton.place(x=290, y=550)
+
+        self.carsPane = ctk.CTkFrame(self.mainPane, width=700, height=500, corner_radius=15,
+                                     fg_color="white",
+                                     bg_color="#e3e7e6")
+        self.carMakeComboBox = ctk.CTkComboBox(self.carsPane, width=225, height=30, corner_radius=5, fg_color="#dbfde7",
+                                               bg_color="white", text_color="#555555", font=("Trebuchet", 12, "bold"),
+                                               border_width=0, button_color="#878787",
+                                               values=self.api_callback("makes", "", "", "",""),
+                                               dropdown_fg_color="#878787", dropdown_font=("Trebuchet", 12, "bold"),
+                                               command=self.makeComboBox_callback)
+        self.carMakeComboBox.place(x=100, y=100)
+
+        self.carTypeComboBox = ctk.CTkComboBox(self.carsPane, width=225, height=30, corner_radius=5, fg_color="#dbfde7",
+                                               bg_color="white", text_color="#555555", font=("Trebuchet", 12, "bold"),
+                                               border_width=0, button_color="#878787",
+                                               values=self.api_callback("types", "", "", "",""),
+                                               dropdown_fg_color="#878787", dropdown_font=("Trebuchet", 12, "bold"),
+                                               command=self.typeComboBox_callback)
+        self.carTypeComboBox.place(x=100, y=200)
+
+        self.carModelComboBox = ctk.CTkComboBox(self.carsPane, width=225, height=30, corner_radius=5,
+                                                fg_color="#dbfde7",
+                                                bg_color="white", text_color="#555555", font=("Trebuchet", 12, "bold"),
+                                                border_width=0, button_color="#878787",
+                                                values=self.api_callback("models", self.carMakeComboBox.get(),
+                                                                         self.carTypeComboBox.get(), "",""),
+                                                dropdown_fg_color="#878787", dropdown_font=("Trebuchet", 12, "bold"),
+                                                command=self.modelComboBox_callback)
+        self.carModelComboBox.place(x=100, y=300)
+
+        self.carYearComboBox = ctk.CTkComboBox(self.carsPane, width=225, height=30, corner_radius=5,
+                                               fg_color="#dbfde7",
+                                               bg_color="white", text_color="#555555", font=("Trebuchet", 12, "bold"),
+                                               border_width=0, button_color="#878787",
+                                               values=self.api_callback("years", self.carMakeComboBox.get(),
+                                                                        self.carTypeComboBox.get(),
+                                                                        self.carModelComboBox.get(),""),
+                                               dropdown_fg_color="#878787", dropdown_font=("Trebuchet", 12, "bold"))
+        self.carYearComboBox.place(x=100, y=400)
+
+        self.addCar = ctk.CTkButton(self.carsPane, text="add", command=self.addCar)
+        self.addCar.place(x=250,y=250)
+
+        self.logoutPane = ctk.CTkFrame(self.mainPane, width=400, height=200, corner_radius=15,
+                                       fg_color="white",
+                                       bg_color="#e3e7e6")
+
+        self.logoutHeaderLabel = ctk.CTkLabel(self.logoutPane, text="Are you sure you want to logout?", width=400,
+                                              fg_color="white", text_color="#00a05e",
+                                              font=("Century Gothic", 20, "bold"), justify=CENTER)
+        self.logoutHeaderLabel.place(x=5, y=40)
+
+        self.logoutButton = ctk.CTkButton(self.logoutPane, text="Yes", fg_color="#146734",
+                                          font=("Trebuchet", 14, "bold"),
+                                          width=80, height=40, corner_radius=5, hover_color="#12552d", bg_color="white",
+                                          cursor="hand2", command=lambda: self.logout_callback(login_window))
+        self.logoutButton.place(x=160, y=115)
 
         self.mainPane.bind("<Map>", lambda event, crud=crud: self.accountInfoUpdate(crud))
 
+        # self.scanReceiptImage()
 
-        self.scanReceiptImage()
+    def addCar(self):
+        print(self.api_callback("car", self.carMakeComboBox.get(), self.carTypeComboBox.get(),
+                                self.carModelComboBox.get(), self.carYearComboBox.get()))
+
+    def makeComboBox_callback(self, choice):
+        models = self.api_callback("models", choice, self.carTypeComboBox.get(), "", "")
+        self.carModelComboBox.configure(values=models)
+        if models:
+            self.carModelComboBox.set(models[0])
+        else:
+            self.carModelComboBox.set("")
+
+        self.modelComboBox_callback("")
+
+    def typeComboBox_callback(self, choice):
+        models = self.api_callback("models", self.carMakeComboBox.get(), choice, "", "")
+        self.carModelComboBox.configure(values=models)
+        if models:
+            self.carModelComboBox.set(models[0])
+        else:
+            self.carModelComboBox.set("")
+
+        self.modelComboBox_callback("")
+
+    def modelComboBox_callback(self, choice):
+        years = self.api_callback("years", self.carMakeComboBox.get(), self.carTypeComboBox.get(),
+                                  self.carModelComboBox.get(), "")
+        self.carYearComboBox.configure(values=years)
+        if years:
+            self.carYearComboBox.set(years[0])
+        else:
+            self.carYearComboBox.set("")
+
+    def api_callback(self, desired_data, make, type, model, year):
+        self.master.after(1000)
+        url = ""
+        querystring = None
+
+        headers = {
+            "X-RapidAPI-Key": "0d60092979msh78b87b91e9028b8p198953jsn379580c215bb",
+            "X-RapidAPI-Host": "car-data.p.rapidapi.com"
+        }
+
+        if desired_data == "makes":
+            url = "https://car-data.p.rapidapi.com/cars/makes"
+            response = requests.get(url, headers=headers, params=querystring)
+            return sorted(response.json())
+        elif desired_data == "types":
+            url = "https://car-data.p.rapidapi.com/cars/types"
+            response = requests.get(url, headers=headers, params=querystring)
+            return sorted(response.json())
+        elif desired_data == "models":
+            url = "https://car-data.p.rapidapi.com/cars"
+            querystring = {"limit": "50", "page": "0", "make": make, "type": type}
+            response = requests.get(url, headers=headers, params=querystring)
+            models = set(car['model'] for car in response.json())
+            return sorted(models)
+        elif desired_data == "years":
+            url = "https://car-data.p.rapidapi.com/cars"
+            querystring = {"limit": "50", "page": "0", "make": make, "type": type, "model": model}
+            response = requests.get(url, headers=headers, params=querystring)
+            years = set(str(car['year']) for car in response.json())
+            return sorted(years)
+        elif desired_data == "car":
+            url = "https://car-data.p.rapidapi.com/cars"
+            querystring = {"limit": "50", "page": "0", "make": make, "type": type, "model": model, "year": year}
+            response = requests.get(url, headers=headers, params=querystring)
+            return response.json()
+
+        return
+
+    def logout_callback(self, login_window):
+        self.selectedTabIndicator.place(x=4, y=148)
+        self.master.after(1, self.dash_button_callback_effect)
+        self.hideLogoutComponents()
+        self.master.withdraw()
+        self.login_app.accountLogin = ""
+        self.login_app.loginTextBox.delete('1.0', END)
+        self.login_app.passwordTextBox.delete(0, END)
+        login_window.deiconify()
 
     def scanReceiptImage(self):
-        # Wczytaj obraz
         image = cv2.imread('images/receipt.jpg')
 
         # Konwersja na odcienie szarości
@@ -385,23 +647,20 @@ class MainWindow(ctk.CTk):
 
         custom_config = r'--oem 3 --psm 11'
         pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-        result=pytesseract.image_to_string(blurred,lang="pol",config=custom_config)
+        result = pytesseract.image_to_string(blurred, lang="pol", config=custom_config)
 
         pattern_dot = re.compile(r'PLN[^\d]*(\d+\.\d{2})')
         pattern_comma = re.compile(r'PLN[^\d]*(\d+,[^\d]\d{2})')
 
-        # Szukanie informacji o kwocie wydanej na paliwo
         match_dot = re.search(pattern_dot, result)
         match_comma = re.search(pattern_comma, result)
 
         print(result)
 
-        # Jeśli znaleziono kwotę z kropką, wyświetl ją
         if match_dot:
             spent_on_fuel_dot = float(match_dot.group(1))
             print(f'Kwota wydana na paliwo (kropka): {spent_on_fuel_dot} PLN')
 
-        # Jeśli znaleziono kwotę z przecinkiem, wyświetl ją
         elif match_comma:
             spent_on_fuel_comma = float(match_comma.group(1).replace(',', '.').replace(' ', ''))
             print(f'Kwota wydana na paliwo (przecinek): {spent_on_fuel_comma} PLN')
@@ -410,6 +669,7 @@ class MainWindow(ctk.CTk):
             print('Nie znaleziono informacji o kwocie wydanej na paliwo.')
 
     def add_new_fuel_record(self, crud):
+        accountLogin = self.login_app.accountLogin
         year = self.yearTextBox.get("0.0", 'end-1c')
         month = self.monthTextBox.get("0.0", 'end-1c')
         day = self.dayTextBox.get("0.0", 'end-1c')
@@ -417,39 +677,67 @@ class MainWindow(ctk.CTk):
         liters = self.litersTextBox.get("0.0", 'end-1c')
         fueltype = self.fueltypeTextBox.get("0.0", 'end-1c')
         station = self.stationTextBox.get("0.0", 'end-1c')
-        crud.createFuelRecord(self.login_window.accountLogin, year, month, day, money, liters, fueltype, station)
+        crud.createFuelRecord(self.login_app.accountLogin, year, month, day, money, liters, fueltype, station)
         self.loadFuelRecords(crud)
+        self.make_plot(crud, accountLogin)
         self.nrOfRefuelingsLabel.configure(text=str(len(self.fuelRecordPanes)))
 
+    def add_new_service_record(self, crud):
+        accountLogin = self.login_app.accountLogin
+        year = self.yearTextBox2.get("0.0", 'end-1c')
+        month = self.monthTextBox2.get("0.0", 'end-1c')
+        day = self.dayTextBox2.get("0.0", 'end-1c')
+        money = self.moneyTextBox2.get("0.0", 'end-1c')
+        serviceType = self.serviceTypeTextBox.get("0.0", 'end-1c')
+        ifSuccessful = self.ifSuccessfulTextBox.get("0.0", 'end-1c')
+        repairShop = self.repairShopTextBox.get("0.0", 'end-1c')
+        crud.createServiceRecord(self.login_app.accountLogin, year, month, day, money, serviceType, ifSuccessful,
+                                 repairShop)
+        self.loadServicesRecords(crud)
+        self.make_plot(crud, accountLogin)
+        self.nrOfServicesLabel.configure(text=str(len(self.serviceRecordPanes)))
+
     def add_fuel_record_callback(self, event):
-        self.ninthPane.place(x=20, y=60)
-        self.seventhPane.place_forget()
+        self.addFuelPane.place(x=20, y=60)
+        self.fuelListPane.place_forget()
 
     def add_fuel_record_back_callback(self, crud):
-        self.seventhPane.place(x=20, y=60)
-        self.ninthPane.place_forget()
+        self.fuelListPane.place(x=20, y=60)
+        self.addFuelPane.place_forget()
+
+    def add_service_record_callback(self, event):
+        self.addServicesPane.place(x=20, y=60)
+        self.servicesListPane.place_forget()
+
+    def add_service_record_back_callback(self, crud):
+        self.servicesListPane.place(x=20, y=60)
+        self.addServicesPane.place_forget()
 
     def calendar_click_callback(self, crud):
         selected_date_str = self.cal.get_date()
         selected_date = datetime.strptime(selected_date_str, "%m/%d/%y")
 
         day = str(selected_date.day)
-        if len(day)==1:
-            day="0"+day
+        if len(day) == 1:
+            day = "0" + day
         month = str(selected_date.month)
-        if len(month)==1:
-            month="0"+month
+        if len(month) == 1:
+            month = "0" + month
         year = str(selected_date.year)
 
         self.dateLabel.configure(text=day + "." + month + "." + year)
         self.dateLabel.update()
 
-        self.refuelingsNumberOnDateLabel.configure(text=str(crud.read_nr_of_fuel_records(self.login_window.accountLogin,day,month,year))+"x")
+        self.refuelingsNumberOnDateLabel.configure(
+            text=str(crud.read_nr_of_fuel_records(self.login_app.accountLogin, day, month, year)) + "x")
+        self.servicesNumberOnDateLabel.configure(
+            text=str(crud.read_nr_of_service_records(self.login_app.accountLogin, day, month, year)) + "x")
 
     def dash_button_callback(self, event):
         if self.leftPane.cget("width") == 70:
             self.selectedTabIndicator.place(x=4, y=148)
             self.master.after(1, self.dash_button_callback_effect)
+            self.hideLogoutComponents()
 
     def dash_button_callback_effect(self):
         if self.leftPane.cget("width") != 270:
@@ -463,17 +751,21 @@ class MainWindow(ctk.CTk):
                 self.showOverviewComponents()
             elif whichButtonPressed == 2:
                 self.showFuelComponents()
+            elif whichButtonPressed == 3:
+                self.showServicesComponents()
             self.showAccountInfoComponents()
             self.leftPane.update()
 
     def acc_button_callback(self, event):
         if self.leftPane.cget("width") == 70:
             self.selectedTabIndicator.place(x=4, y=248)
+            self.hideLogoutComponents()
         if self.leftPane.cget("width") == 270:
             self.selectedTabIndicator.place(x=4, y=248)
             self.hideAccountInfoComponents()
             self.hideOverviewComponents()
             self.hideFuelComponents()
+            self.hideServicesComponents()
             self.master.after(1, self.acc_button_callback_effect)
 
     def acc_button_callback_effect(self):
@@ -489,11 +781,13 @@ class MainWindow(ctk.CTk):
     def sett_button_callback(self, event):
         if self.leftPane.cget("width") == 70:
             self.selectedTabIndicator.place(x=4, y=348)
+            self.hideLogoutComponents()
         if self.leftPane.cget("width") == 270:
             self.selectedTabIndicator.place(x=4, y=348)
             self.hideAccountInfoComponents()
             self.hideOverviewComponents()
             self.hideFuelComponents()
+            self.hideServicesComponents()
             self.master.after(1, self.sett_button_callback_effect)
 
     def sett_button_callback_effect(self):
@@ -509,11 +803,13 @@ class MainWindow(ctk.CTk):
     def log_button_callback(self, event):
         if self.leftPane.cget("width") == 70:
             self.selectedTabIndicator.place(x=4, y=448)
+            self.showLogoutComponents()
         if self.leftPane.cget("width") == 270:
             self.selectedTabIndicator.place(x=4, y=448)
             self.hideAccountInfoComponents()
             self.hideOverviewComponents()
             self.hideFuelComponents()
+            self.hideServicesComponents()
             self.master.after(1, self.log_button_callback_effect)
 
     def log_button_callback_effect(self):
@@ -525,23 +821,35 @@ class MainWindow(ctk.CTk):
             self.master.after(1, self.log_button_callback_effect)
         else:
             self.leftPane.update()
+            self.showLogoutComponents()
 
-    def make_plot(self):
+    def make_plot(self, crud, accountLogin):
+        month_data, money_data = crud.read_money_spent(accountLogin)
         current_date = datetime.now()
-        # Lista nazw miesięcy
-        month_names = []
+        months = [
+            'January', 'February', 'March', 'April',
+            'May', 'June', 'July', 'August',
+            'September', 'October', 'November', 'December'
+        ]
 
-        # Tworzenie listy nazw 7 ostatnich miesięcy
-        for i in range(7):
-            month_names.append(current_date.strftime('%B'))
-            current_date -= timedelta(days=30)  # zakładamy, że miesiące mają średnio 30 dni
+        last_seven_months = []
 
-        month_names.reverse()
+        for i in range(6, -1, -1):
+            current_month = current_date - timedelta(days=current_date.day)
+            current_month = current_month.replace(month=current_date.month - i)
 
-        data1 = {'Month': month_names,
-                 '[zł] spent': [0, 0, 0, 0, 0, 0, 300.4]
-                 }
-        df1 = pd.DataFrame(data1)
+            last_seven_months.append(months[current_month.month - 1])
+
+        data = {'Month': last_seven_months,
+                '[zł] spent': [0] * 7
+                }
+
+        for month, money in zip(month_data, money_data):
+            month_name = months[int(month) - 1]
+            index = last_seven_months.index(month_name)
+            data['[zł] spent'][index] += money
+
+        df = pd.DataFrame(data)
 
         figure1 = plt.Figure(figsize=(6, 5), dpi=100)
         figure1.subplots_adjust(bottom=0.4)
@@ -549,17 +857,21 @@ class MainWindow(ctk.CTk):
         ax1.tick_params(axis='x', labelsize=8)
         bar1 = FigureCanvasTkAgg(figure1, self.plotPane)
         bar1.get_tk_widget().place(x=0, y=0)
-        df1.plot(kind='bar', legend=True, ax=ax1, color="#085f3d")
-        ax1.set_xticklabels(month_names, rotation=0)
+        df.plot(kind='bar', x='Month', y='[zł] spent', legend=True, ax=ax1, color="#085f3d")
+        ax1.set_xticklabels(last_seven_months, rotation=0)
         ax1.set_title('Money spent in recent months')
 
     def accountInfoUpdate(self, crud):
-        accountLogin = self.login_window.accountLogin
+        accountLogin = self.login_app.accountLogin
+        self.make_plot(crud, accountLogin)
         self.accountInfo.configure(text=accountLogin)
         self.loadFuelRecords(crud)
         self.nrOfRefuelingsLabel.configure(text=str(len(self.fuelRecordPanes)))
+        self.loadServicesRecords(crud)
+        self.nrOfServicesLabel.configure(text=str(len(self.serviceRecordPanes)))
         self.accountInfo.update()
         self.nrOfRefuelingsLabel.update()
+        self.nrOfServicesLabel.update()
         self.calendar_click_callback(crud)
 
     def button_enter(self, button):
@@ -580,6 +892,8 @@ class MainWindow(ctk.CTk):
 
         self.showOverviewComponents()
         self.hideFuelComponents()
+        self.hideServicesComponents()
+        self.hideCarsComponents()
 
     def fuel_button_callback(self, event):
         global whichButtonPressed
@@ -591,6 +905,8 @@ class MainWindow(ctk.CTk):
 
         self.showFuelComponents()
         self.hideOverviewComponents()
+        self.hideServicesComponents()
+        self.hideCarsComponents()
 
     def services_button_callback(self, event):
         global whichButtonPressed
@@ -600,8 +916,10 @@ class MainWindow(ctk.CTk):
         self.nearbyButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
         self.carsButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
 
+        self.showServicesComponents()
         self.hideOverviewComponents()
         self.hideFuelComponents()
+        self.hideCarsComponents()
 
     def cars_button_callback(self, event):
         global whichButtonPressed
@@ -611,8 +929,10 @@ class MainWindow(ctk.CTk):
         self.servicesButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
         self.nearbyButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
 
+        self.showCarsComponents()
         self.hideOverviewComponents()
         self.hideFuelComponents()
+        self.hideServicesComponents()
 
     def nearby_button_callback(self, event):
         global whichButtonPressed
@@ -624,6 +944,8 @@ class MainWindow(ctk.CTk):
 
         self.hideOverviewComponents()
         self.hideFuelComponents()
+        self.hideServicesComponents()
+        self.hideCarsComponents()
 
     def hideOverviewComponents(self):
         self.carPane.place_forget()
@@ -644,21 +966,42 @@ class MainWindow(ctk.CTk):
         self.sloganPane.place(x=660, y=587)
 
     def showFuelComponents(self):
-        self.eighthPane.place(x=860, y=630)
-        self.seventhPane.place(x=20, y=60)
+        self.addFuelButtonPane.place(x=860, y=630)
+        self.fuelListPane.place(x=20, y=60)
 
     def hideFuelComponents(self):
-        self.seventhPane.place_forget()
-        self.eighthPane.place_forget()
-        self.ninthPane.place_forget()
+        self.fuelListPane.place_forget()
+        self.addFuelButtonPane.place_forget()
+        self.addFuelPane.place_forget()
+
+    def showServicesComponents(self):
+        self.addServicesButtonPane.place(x=860, y=630)
+        self.servicesListPane.place(x=20, y=60)
+
+    def hideServicesComponents(self):
+        self.servicesListPane.place_forget()
+        self.addServicesButtonPane.place_forget()
+        self.addServicesPane.place_forget()
+
+    def showCarsComponents(self):
+        self.carsPane.place(x=200, y=150)
+
+    def hideCarsComponents(self):
+        self.carsPane.place_forget()
 
     def showAccountInfoComponents(self):
-        self.accInfoImage.place(x=810, y=5)
-        self.accountInfo.place(x=834, y=10)
+        self.accountInfo.place(x=44, y=18)
+        self.accInfoImage.place(x=20, y=13)
 
     def hideAccountInfoComponents(self):
         self.accInfoImage.place_forget()
         self.accountInfo.place_forget()
+
+    def showLogoutComponents(self):
+        self.logoutPane.place(x=365, y=250)
+
+    def hideLogoutComponents(self):
+        self.logoutPane.place_forget()
 
     def loadFuelRecords(self, crud):
 
@@ -670,7 +1013,10 @@ class MainWindow(ctk.CTk):
         self.infoLabels.clear()
 
         year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data = crud.read_fuel_records(
-            self.login_window.accountLogin)
+            self.login_app.accountLogin)
+
+        if not year_data:
+            return
 
         fuel_records = list(zip(year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data))
 
@@ -681,7 +1027,7 @@ class MainWindow(ctk.CTk):
             (record[0], f"{int(record[1]):02d}", f"{int(record[2]):02d}", record[3], record[4], record[5], record[6])
             for record in fuel_records]
 
-        sorted_records = sorted(fuel_records, key=lambda x: (x[0], x[1], x[2]),reverse=True)
+        sorted_records = sorted(fuel_records, key=lambda x: (x[0], x[1], x[2]), reverse=True)
 
         year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data = zip(*sorted_records)
 
@@ -690,7 +1036,7 @@ class MainWindow(ctk.CTk):
 
         for record in year_data:
             self.fuelRecordPanes.append(
-                ctk.CTkFrame(self.seventhPane, width=750, height=100, corner_radius=5, fg_color="#e3e7e6",
+                ctk.CTkFrame(self.fuelListPane, width=750, height=100, corner_radius=5, fg_color="#e3e7e6",
                              bg_color="white"))
             self.dateLabels.append(
                 ctk.CTkLabel(self.fuelRecordPanes[i],
@@ -709,4 +1055,68 @@ class MainWindow(ctk.CTk):
             pane.grid(row=j + 1, column=0, pady=15, padx=25)
             self.dateLabels[j].place(x=0, y=15)
             self.infoLabels[j].place(x=0, y=50)
+            j = j + 1
+
+    def loadServicesRecords(self, crud):
+
+        for pane in self.serviceRecordPanes:
+            pane.destroy()
+
+        self.serviceRecordPanes.clear()
+        self.dateLabels2.clear()
+        self.infoLabels2.clear()
+        self.successfulLabels.clear()
+
+        year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data = crud.read_services_records(
+            self.login_app.accountLogin)
+
+        if not year_data:
+            return
+
+        service_records = list(
+            zip(year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data))
+
+        service_records = [(int(record[0]), int(record[1]), int(record[2]), record[3], record[4], record[5], record[6])
+                           for
+                           record in service_records]
+
+        service_records = [
+            (record[0], f"{int(record[1]):02d}", f"{int(record[2]):02d}", record[3], record[4], record[5], record[6])
+            for record in service_records]
+
+        sorted_records = sorted(service_records, key=lambda x: (x[0], x[1], x[2]), reverse=True)
+
+        year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data = zip(
+            *sorted_records)
+
+        i = 0
+        j = 0
+
+        for record in year_data:
+            self.serviceRecordPanes.append(
+                ctk.CTkFrame(self.servicesListPane, width=750, height=100, corner_radius=5, fg_color="#e3e7e6",
+                             bg_color="white"))
+            self.dateLabels2.append(
+                ctk.CTkLabel(self.serviceRecordPanes[i],
+                             text=str(day_data[i]) + "." + str(month_data[i]) + "." + str(year_data[i]),
+                             fg_color="#e3e7e6",
+                             text_color="#00a05e", font=("Century Gothic", 17, "bold")))
+            self.infoLabels2.append(
+                ctk.CTkLabel(self.serviceRecordPanes[i],
+                             text=str(money_data[i]) + "zł spent on " + str(serviceType_data[i]) + " service" +
+                                  " at " + str(repairShop_data[i]) + " repair shop.",
+                             fg_color="#e3e7e6",
+                             text_color="#555555", font=("Century Gothic", 18, "bold")))
+            self.successfulLabels.append(
+                ctk.CTkLabel(self.serviceRecordPanes[i],
+                             text="Was this service successful?: " + str(ifSuccessful_data[i]),
+                             fg_color="#e3e7e6",
+                             text_color="#00a05e", font=("Century Gothic", 17, "bold")))
+            i = i + 1
+
+        for pane in self.serviceRecordPanes:
+            pane.grid(row=j + 1, column=0, pady=15, padx=25)
+            self.dateLabels2[j].place(x=20, y=15)
+            self.infoLabels2[j].place(x=20, y=50)
+            self.successfulLabels[j].place(x=430, y=15)
             j = j + 1
