@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="861f2633-f18d-4148-9f74-f23be938affc" name="Changes" comment="- Calendar with fuel data synchronized&#10;- Image OCR tested" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="2a50XJVMiOkF7YnFoIsjQ1UhCIr" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/piotr/PycharmProjects/PJF_Haraburda/package/Main.py&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;firebird&quot;
+    ]
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\piotr\PycharmProjects\PJF_Haraburda\images" />
+      <recent name="C:\Users\piotr\PycharmProjects\PJF_Haraburda" />
+      <recent name="C:\Users\piotr\PycharmProjects\PJF_Haraburda\package" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="Main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="PJF_Haraburda" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.9" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/Main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="861f2633-f18d-4148-9f74-f23be938affc" name="Changes" comment="" />
+      <created>1703593170893</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1703593170893</updated>
+      <workItem from="1703593172066" duration="11854000" />
+      <workItem from="1703611864223" duration="1092000" />
+      <workItem from="1703680870972" duration="4228000" />
+      <workItem from="1703685145161" duration="24907000" />
+      <workItem from="1703717370928" duration="1837000" />
+      <workItem from="1703763403858" duration="32606000" />
+      <workItem from="1703852260843" duration="15502000" />
+    </task>
+    <task id="LOCAL-00001" summary="- Project structure repaired&#10;(Files were copied from my other GitHub repository https://github.com/PiotrHaraburda/MileageMate.git)">
+      <option name="closed" value="true" />
+      <created>1703593903741</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1703593903741</updated>
+    </task>
+    <task id="LOCAL-00002" summary="- Login function added&#10;- Login effect added&#10;- Main window opening implemented&#10;- Tab buttons added">
+      <option name="closed" value="true" />
+      <created>1703607848119</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1703607848119</updated>
+    </task>
+    <task id="LOCAL-00003" summary="- Images and Scripts folders made&#10;- Every file sorted&#10;- Main Application UI designed&#10;- Plot example added&#10;- Switching tabs implemented">
+      <option name="closed" value="true" />
+      <created>1703719142648</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1703719142648</updated>
+    </task>
+    <task id="LOCAL-00004" summary="- Overview tab UI designed&#10;- Calendar added&#10;- Calendar synchronized with info pane&#10;- Sliding leftPane effect added&#10;- Fuel tab designed&#10;- Fuel tab synchronized with Firebase database&#10;- Fuel tab synchronized with overview info">
+      <option name="closed" value="true" />
+      <created>1703791497983</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1703791497983</updated>
+    </task>
+    <task id="LOCAL-00005" summary="- Ability to add new fuel records implemented&#10;- Sorting fuel records by date implemented&#10;- Did some refactoring">
+      <option name="closed" value="true" />
+      <created>1703805551607</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1703805551607</updated>
+    </task>
+    <task id="LOCAL-00006" summary="- Calendar with fuel data synchronized&#10;- Image OCR tested">
+      <option name="closed" value="true" />
+      <created>1703868873385</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1703868873385</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="- Project structure repaired&#10;(Files were copied from my other GitHub repository https://github.com/PiotrHaraburda/MileageMate.git)" />
+    <MESSAGE value="- Login function added&#10;- Login effect added&#10;- Main window opening implemented&#10;- Tab buttons added" />
+    <MESSAGE value="- Images and Scripts folders made&#10;- Every file sorted&#10;- Main Application UI designed&#10;- Plot example added&#10;- Switching tabs implemented" />
+    <MESSAGE value="- Overview tab UI designed&#10;- Calendar added&#10;- Calendar synchronized with info pane&#10;- Sliding leftPane effect added&#10;- Fuel tab designed&#10;- Fuel tab synchronized with Firebase database&#10;- Fuel tab synchronized with overview info" />
+    <MESSAGE value="- Ability to add new fuel records implemented&#10;- Sorting fuel records by date implemented&#10;- Did some refactoring" />
+    <MESSAGE value="- Calendar with fuel data synchronized&#10;- Image OCR tested" />
+    <option name="LAST_COMMIT_MESSAGE" value="- Calendar with fuel data synchronized&#10;- Image OCR tested" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/PJF_Haraburda$FirebaseConnection.coverage" NAME="FirebaseConnection Coverage Results" MODIFIED="1703593622620" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/package" />
+    <SUITE FILE_PATH="coverage/PJF_Haraburda$Main.coverage" NAME="Main Coverage Results" MODIFIED="1703868784560" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+  </component>
+</project>
