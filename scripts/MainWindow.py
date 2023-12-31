@@ -1,8 +1,8 @@
-import os
 import re
 from datetime import datetime, timedelta
 from tkinter import *
 import customtkinter as ctk
+import geocoder
 import pytesseract
 import requests
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -11,6 +11,7 @@ from tkcalendar import Calendar
 import matplotlib.pyplot as plt
 import cv2
 import numpy as np
+from tkintermapview import TkinterMapView
 
 whichButtonPressed = 1
 
@@ -125,10 +126,10 @@ class MainWindow(ctk.CTk):
                                     bg_color="#e3e7e6")
         self.carPane.place(x=20, y=60)
 
-        self.carNameLabel = ctk.CTkLabel(self.carPane, text="Lexus IS200",
-                                         font=("Century Gothic", 25, "bold"), height=20,
-                                         fg_color="white", text_color="#555555", width=260, justify=CENTER)
-        self.carNameLabel.place(x=20, y=20)
+        self.carNameLabel = ctk.CTkLabel(self.carPane, text="Car not added!",
+                                         font=("Century Gothic", 22, "bold"), height=20,
+                                         fg_color="white", text_color="#555555", width=300, justify=CENTER)
+        self.carNameLabel.place(x=0, y=20)
 
         self.yourCarLabel = ctk.CTkLabel(self.carPane, text="Your personal vehicle",
                                          font=("Century Gothic", 15, "bold"), height=20,
@@ -463,47 +464,96 @@ class MainWindow(ctk.CTk):
 
         self.addNewServiceRecordButton.place(x=290, y=550)
 
-        self.carsPane = ctk.CTkFrame(self.mainPane, width=700, height=500, corner_radius=15,
+        self.carsPane = ctk.CTkFrame(self.mainPane, width=600, height=300, corner_radius=15,
                                      fg_color="white",
                                      bg_color="#e3e7e6")
-        self.carMakeComboBox = ctk.CTkComboBox(self.carsPane, width=225, height=30, corner_radius=5, fg_color="#dbfde7",
+
+        self.carsHeaderLabel = ctk.CTkLabel(self.carsPane, text="Choose your car", width=600,
+                                            fg_color="white", text_color="#00a05e",
+                                            font=("Century Gothic", 22, "bold"), justify=CENTER)
+        self.carsHeaderLabel.place(x=0, y=40)
+
+        self.carMakeLabel = ctk.CTkLabel(self.carsPane, text="Make:", text_color="#555555",
+                                         font=("Trebuchet", 14, "bold"),
+                                         bg_color="white")
+        self.carMakeLabel.place(x=50, y=90)
+
+        self.carMakeComboBox = ctk.CTkComboBox(self.carsPane, width=150, height=30, corner_radius=5, fg_color="#dbfde7",
                                                bg_color="white", text_color="#555555", font=("Trebuchet", 12, "bold"),
                                                border_width=0, button_color="#878787",
-                                               values=self.api_callback("makes", "", "", "",""),
+                                               # values=self.api_callback("makes", "", "", "", ""),
                                                dropdown_fg_color="#878787", dropdown_font=("Trebuchet", 12, "bold"),
                                                command=self.makeComboBox_callback)
-        self.carMakeComboBox.place(x=100, y=100)
+        self.carMakeComboBox.place(x=50, y=120)
 
-        self.carTypeComboBox = ctk.CTkComboBox(self.carsPane, width=225, height=30, corner_radius=5, fg_color="#dbfde7",
+        self.carTypeLabel = ctk.CTkLabel(self.carsPane, text="Body type:", text_color="#555555",
+                                         font=("Trebuchet", 14, "bold"),
+                                         bg_color="white")
+        self.carTypeLabel.place(x=50, y=190)
+
+        self.carTypeComboBox = ctk.CTkComboBox(self.carsPane, width=150, height=30, corner_radius=5, fg_color="#dbfde7",
                                                bg_color="white", text_color="#555555", font=("Trebuchet", 12, "bold"),
                                                border_width=0, button_color="#878787",
-                                               values=self.api_callback("types", "", "", "",""),
+                                               # values=self.api_callback("types", "", "", "", ""),
                                                dropdown_fg_color="#878787", dropdown_font=("Trebuchet", 12, "bold"),
                                                command=self.typeComboBox_callback)
-        self.carTypeComboBox.place(x=100, y=200)
+        self.carTypeComboBox.place(x=50, y=220)
 
-        self.carModelComboBox = ctk.CTkComboBox(self.carsPane, width=225, height=30, corner_radius=5,
+        self.carModelLabel = ctk.CTkLabel(self.carsPane, text="Model:", text_color="#555555",
+                                          font=("Trebuchet", 14, "bold"),
+                                          bg_color="white")
+        self.carModelLabel.place(x=250, y=90)
+
+        self.carModelComboBox = ctk.CTkComboBox(self.carsPane, width=150, height=30, corner_radius=5,
                                                 fg_color="#dbfde7",
                                                 bg_color="white", text_color="#555555", font=("Trebuchet", 12, "bold"),
                                                 border_width=0, button_color="#878787",
-                                                values=self.api_callback("models", self.carMakeComboBox.get(),
-                                                                         self.carTypeComboBox.get(), "",""),
+                                                # values=self.api_callback("models", self.carMakeComboBox.get(),
+                                                #                          self.carTypeComboBox.get(), "", ""),
                                                 dropdown_fg_color="#878787", dropdown_font=("Trebuchet", 12, "bold"),
                                                 command=self.modelComboBox_callback)
-        self.carModelComboBox.place(x=100, y=300)
+        self.carModelComboBox.place(x=250, y=120)
 
-        self.carYearComboBox = ctk.CTkComboBox(self.carsPane, width=225, height=30, corner_radius=5,
+        self.carYearLabel = ctk.CTkLabel(self.carsPane, text="Year:", text_color="#555555",
+                                         font=("Trebuchet", 14, "bold"),
+                                         bg_color="white")
+        self.carYearLabel.place(x=250, y=190)
+
+        self.carYearComboBox = ctk.CTkComboBox(self.carsPane, width=150, height=30, corner_radius=5,
                                                fg_color="#dbfde7",
                                                bg_color="white", text_color="#555555", font=("Trebuchet", 12, "bold"),
                                                border_width=0, button_color="#878787",
-                                               values=self.api_callback("years", self.carMakeComboBox.get(),
-                                                                        self.carTypeComboBox.get(),
-                                                                        self.carModelComboBox.get(),""),
+                                               # values=self.api_callback("years", self.carMakeComboBox.get(),
+                                               #                          self.carTypeComboBox.get(),
+                                               #                          self.carModelComboBox.get(), ""),
                                                dropdown_fg_color="#878787", dropdown_font=("Trebuchet", 12, "bold"))
-        self.carYearComboBox.place(x=100, y=400)
+        self.carYearComboBox.place(x=250, y=220)
 
-        self.addCar = ctk.CTkButton(self.carsPane, text="add", command=self.addCar)
-        self.addCar.place(x=250,y=250)
+        self.addCar = ctk.CTkButton(self.carsPane, text="Save your\nchoice", fg_color="#146734",
+                                    font=("Trebuchet", 14, "bold"),
+                                    width=120, height=50, corner_radius=5, hover_color="#12552d", bg_color="white",
+                                    command=lambda: self.add_car_callback(crud))
+        self.addCar.place(x=440, y=160)
+
+        self.nearbyPane = ctk.CTkFrame(self.mainPane, width=700, height=550, corner_radius=15,
+                                     fg_color="white",
+                                     bg_color="#e3e7e6")
+
+        self.nearbyHeaderLabel = ctk.CTkLabel(self.nearbyPane, text="Nearby locations", width=700,
+                                            fg_color="white", text_color="#00a05e",
+                                            font=("Century Gothic", 20, "bold"), justify=CENTER)
+        self.nearbyHeaderLabel.place(x=0, y=10)
+
+        self.map_widget = TkinterMapView(self.nearbyPane, width=700, height=500, corner_radius=0)
+        self.map_widget.place(x=0,y=50)
+
+        # google normal tile server
+        self.map_widget.set_tile_server("https://tile.openstreetmap.org/{z}/{x}/{y}.png",max_zoom=17)
+
+        g = geocoder.ip('me')
+        marker_1 =self.map_widget.set_position(g.latlng[0],g.latlng[1],marker=True)
+        marker_1.set_text("Your approx. location")
+        self.map_widget.set_zoom(17)
 
         self.logoutPane = ctk.CTkFrame(self.mainPane, width=400, height=200, corner_radius=15,
                                        fg_color="white",
@@ -524,9 +574,12 @@ class MainWindow(ctk.CTk):
 
         # self.scanReceiptImage()
 
-    def addCar(self):
-        print(self.api_callback("car", self.carMakeComboBox.get(), self.carTypeComboBox.get(),
-                                self.carModelComboBox.get(), self.carYearComboBox.get()))
+    def add_car_callback(self, crud):
+
+        if self.carMakeComboBox.get() != "" and self.carTypeComboBox.get() != "" and self.carModelComboBox.get() != "" and self.carYearComboBox.get() != "":
+            crud.create_car_data(self.login_app.accountLogin, self.carMakeComboBox.get(), self.carTypeComboBox.get(),
+                                 self.carModelComboBox.get(), self.carYearComboBox.get())
+            self.carNameLabel.configure(text=self.carMakeComboBox.get() + " " + self.carModelComboBox.get())
 
     def makeComboBox_callback(self, choice):
         models = self.api_callback("models", choice, self.carTypeComboBox.get(), "", "")
@@ -753,6 +806,10 @@ class MainWindow(ctk.CTk):
                 self.showFuelComponents()
             elif whichButtonPressed == 3:
                 self.showServicesComponents()
+            elif whichButtonPressed == 4:
+                self.showCarsComponents()
+            elif whichButtonPressed == 5:
+                self.showNearbyComponents()
             self.showAccountInfoComponents()
             self.leftPane.update()
 
@@ -766,6 +823,8 @@ class MainWindow(ctk.CTk):
             self.hideOverviewComponents()
             self.hideFuelComponents()
             self.hideServicesComponents()
+            self.hideCarsComponents()
+            self.hideNearbyComponents()
             self.master.after(1, self.acc_button_callback_effect)
 
     def acc_button_callback_effect(self):
@@ -788,6 +847,8 @@ class MainWindow(ctk.CTk):
             self.hideOverviewComponents()
             self.hideFuelComponents()
             self.hideServicesComponents()
+            self.hideCarsComponents()
+            self.hideNearbyComponents()
             self.master.after(1, self.sett_button_callback_effect)
 
     def sett_button_callback_effect(self):
@@ -810,6 +871,8 @@ class MainWindow(ctk.CTk):
             self.hideOverviewComponents()
             self.hideFuelComponents()
             self.hideServicesComponents()
+            self.hideCarsComponents()
+            self.hideNearbyComponents()
             self.master.after(1, self.log_button_callback_effect)
 
     def log_button_callback_effect(self):
@@ -863,6 +926,7 @@ class MainWindow(ctk.CTk):
 
     def accountInfoUpdate(self, crud):
         accountLogin = self.login_app.accountLogin
+        self.loadCarData(crud, accountLogin)
         self.make_plot(crud, accountLogin)
         self.accountInfo.configure(text=accountLogin)
         self.loadFuelRecords(crud)
@@ -894,6 +958,7 @@ class MainWindow(ctk.CTk):
         self.hideFuelComponents()
         self.hideServicesComponents()
         self.hideCarsComponents()
+        self.hideNearbyComponents()
 
     def fuel_button_callback(self, event):
         global whichButtonPressed
@@ -907,6 +972,7 @@ class MainWindow(ctk.CTk):
         self.hideOverviewComponents()
         self.hideServicesComponents()
         self.hideCarsComponents()
+        self.hideNearbyComponents()
 
     def services_button_callback(self, event):
         global whichButtonPressed
@@ -920,6 +986,7 @@ class MainWindow(ctk.CTk):
         self.hideOverviewComponents()
         self.hideFuelComponents()
         self.hideCarsComponents()
+        self.hideNearbyComponents()
 
     def cars_button_callback(self, event):
         global whichButtonPressed
@@ -933,6 +1000,7 @@ class MainWindow(ctk.CTk):
         self.hideOverviewComponents()
         self.hideFuelComponents()
         self.hideServicesComponents()
+        self.hideNearbyComponents()
 
     def nearby_button_callback(self, event):
         global whichButtonPressed
@@ -942,6 +1010,7 @@ class MainWindow(ctk.CTk):
         self.servicesButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
         self.carsButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
 
+        self.showNearbyComponents()
         self.hideOverviewComponents()
         self.hideFuelComponents()
         self.hideServicesComponents()
@@ -984,10 +1053,16 @@ class MainWindow(ctk.CTk):
         self.addServicesPane.place_forget()
 
     def showCarsComponents(self):
-        self.carsPane.place(x=200, y=150)
+        self.carsPane.place(x=165, y=200)
 
     def hideCarsComponents(self):
         self.carsPane.place_forget()
+
+    def showNearbyComponents(self):
+        self.nearbyPane.place(x=115, y=100)
+
+    def hideNearbyComponents(self):
+        self.nearbyPane.place_forget()
 
     def showAccountInfoComponents(self):
         self.accountInfo.place(x=44, y=18)
@@ -1120,3 +1195,18 @@ class MainWindow(ctk.CTk):
             self.infoLabels2[j].place(x=20, y=50)
             self.successfulLabels[j].place(x=430, y=15)
             j = j + 1
+
+    def loadCarData(self, crud, accountLogin):
+        make, type, model, year = crud.read_car_data(accountLogin)
+        if make and model:
+            self.carNameLabel.configure(text=make + " " + model)
+            self.carMakeComboBox.set(make)
+            self.carTypeComboBox.set(type)
+            self.carModelComboBox.set(model)
+            self.carYearComboBox.set(year)
+        else:
+            self.carNameLabel.configure(text="Car not added!")
+            self.carMakeComboBox.set("")
+            self.carTypeComboBox.set("")
+            self.carModelComboBox.set("")
+            self.carYearComboBox.set("")

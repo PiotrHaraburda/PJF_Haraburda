@@ -12,6 +12,10 @@ class FirebaseCRUD:
         user_id = login
         self.database.child('users').child(user_id).set(data)
 
+    def create_car_data(self,user_id,make,type,model,year):
+        data = {'make': make, 'model': model, 'year': year, "type": type}
+        self.database.child('users').child(user_id).child("car_data").set(data)
+
     def createFuelRecord(self, login, year, month, day, money_spent, liters_refueled, fuel_type, gas_station):
         data = {'year': year, 'month': month, 'day': day, "money_spent": money_spent,
                 "liters_refueled": liters_refueled, "fuel_type": fuel_type, "gas_station": gas_station}
@@ -30,6 +34,21 @@ class FirebaseCRUD:
             return users_info.get().val().get(desired_item)
         except AttributeError:
             return ""
+
+    def read_car_data(self,user_id):
+        make_info = []
+        type_info = []
+        model_info =[]
+        year_info = []
+        try:
+            make_info = self.database.child('users').child(user_id).child("car_data").get().val().get("make")
+            type_info = self.database.child('users').child(user_id).child("car_data").get().val().get("type")
+            model_info = self.database.child('users').child(user_id).child("car_data").get().val().get("model")
+            year_info = self.database.child('users').child(user_id).child("car_data").get().val().get("year")
+        except AttributeError:
+            return make_info,type_info,model_info,year_info
+
+        return make_info,type_info,model_info,year_info
 
     def read_fuel_records(self, user_id):
         year_data = []
