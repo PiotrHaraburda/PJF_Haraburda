@@ -1,6 +1,4 @@
-from tkinter import *
 import customtkinter as ctk
-from PIL import Image
 
 
 class RegisterWindow(ctk.CTk):
@@ -98,4 +96,4 @@ class RegisterWindow(ctk.CTk):
         password = self.passwordTextBox.get()
 
         if first_name != "" and login != "" and email != "" and password != "":
-            crud.createUser(first_name, login, email, age, password)
+            crud.create_user(first_name, login, email, age, password)

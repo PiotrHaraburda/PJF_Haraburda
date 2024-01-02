@@ -23,22 +23,28 @@ accountInfoImage = ctk.CTkImage(light_image=Image.open("images/accountInfo.png")
 
 dashboardImage = ctk.CTkImage(light_image=Image.open("images/dashboard.png"), size=(35, 35))
 accountImage = ctk.CTkImage(light_image=Image.open("images/account.png"), size=(35, 35))
-settingsImage = ctk.CTkImage(light_image=Image.open("images/settings.png"), size=(35, 35))
+creditsImage = ctk.CTkImage(light_image=Image.open("images/credits.png"), size=(35, 35))
 logoutImage = ctk.CTkImage(light_image=Image.open("images/logout.png"), size=(35, 35))
 fuelImage = ctk.CTkImage(light_image=Image.open("images/fuel.png"), size=(45, 45))
 serviceImage = ctk.CTkImage(light_image=Image.open("images/service.png"), size=(45, 45))
 carImage = ctk.CTkImage(light_image=Image.open("images/car.png"), size=(100, 100))
 plusImage = ctk.CTkImage(light_image=Image.open("images/plus.png"), size=(48, 48))
 backImage = ctk.CTkImage(light_image=Image.open("images/back.png"), size=(35, 35))
+backgroundImage = ctk.CTkImage(light_image=Image.open("images/background.png"), size=(1130, 700))
+showImage = ctk.CTkImage(light_image=Image.open("images/show.png"), size=(20, 20))
+hideImage = ctk.CTkImage(light_image=Image.open("images/hide.png"), size=(20, 20))
 
 receiptImage = Image.open("images/receipt.jpg")
 
 crud = scripts.FirebaseCRUD.FirebaseCRUD()
 
 login_app = scripts.LoginWindow.LoginWindow(login_window, register_window, loading_window, mainImage, crud)
-loading_app = scripts.LoadingWindow.LoadingWindow(loading_window,login_app, main_window, mainImage,crud)
+loading_app = scripts.LoadingWindow.LoadingWindow(loading_window, login_app, main_window, mainImage, crud)
 register_app = scripts.RegisterWindow.RegisterWindow(register_window, login_window, mainImage, crud)
-main_app = scripts.MainWindow.MainWindow(main_window, login_app, login_window, mainImage2, accountInfoImage, dashboardImage, accountImage, settingsImage, logoutImage, fuelImage, serviceImage, carImage, plusImage, backImage, receiptImage, crud)
+main_app = scripts.MainWindow.MainWindow(main_window, login_app, login_window, backgroundImage, mainImage2,
+                                         accountInfoImage,
+                                         dashboardImage, accountImage, creditsImage, logoutImage, fuelImage,
+                                         serviceImage, carImage, plusImage, backImage,hideImage,showImage, receiptImage, crud)
 
 
 def main():

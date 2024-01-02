@@ -1,9 +1,7 @@
 import customtkinter as ctk
-import requests
 
 j = 0
 i = -50
-k = 0
 
 
 class LoginWindow(ctk.CTk):
@@ -13,7 +11,10 @@ class LoginWindow(ctk.CTk):
         self.master = master
         self.loading_window = main_app_window
 
+        self.accountFirstName = ""
         self.accountLogin = ""
+        self.accountEmail = ""
+        self.accountPassword = ""
 
         self.imageLabel = ctk.CTkLabel(self.master, image=mainImage, text="", bg_color="white")
         self.imageLabel.place(x=280, y=35)
@@ -86,12 +87,15 @@ class LoginWindow(ctk.CTk):
         self.invalidLoginLabel.place_forget()
         self.invalidPasswordLabel.place_forget()
 
-        if crud.readUser(self.loginTextBox.get("0.0", 'end-1c'), desired_item) == "":
+        if crud.read_user(self.loginTextBox.get("0.0", 'end-1c'), desired_item) == "":
             self.invalidLoginLabel.place(x=240, y=210)
             return
 
-        if crud.readUser(self.loginTextBox.get("0.0", 'end-1c'), desired_item) == self.passwordTextBox.get():
+        if crud.read_user(self.loginTextBox.get("0.0", 'end-1c'), desired_item) == self.passwordTextBox.get():
             self.accountLogin = self.loginTextBox.get("0.0", 'end-1c')
+            self.accountPassword = self.passwordTextBox.get()
+            self.accountFirstName = crud.read_user(self.accountLogin, "first_name")
+            self.accountEmail = crud.read_user(self.accountLogin, "email")
             self.master.withdraw()
             self.loading_window.deiconify()
         else:

@@ -7,7 +7,7 @@ class FirebaseCRUD:
         con = scripts.FirebaseConnection.FirebaseConnection()
         self.database = con.database
 
-    def createUser(self, first_name, login, email, age, password):
+    def create_user(self, first_name, login, email, age, password):
         data = {'first_name': first_name, 'login': login, 'email': email, "age": age, "password": password}
         user_id = login
         self.database.child('users').child(user_id).set(data)
@@ -16,19 +16,19 @@ class FirebaseCRUD:
         data = {'make': make, 'model': model, 'year': year, "type": type}
         self.database.child('users').child(user_id).child("car_data").set(data)
 
-    def createFuelRecord(self, login, year, month, day, money_spent, liters_refueled, fuel_type, gas_station):
+    def create_fuel_record(self, login, year, month, day, money_spent, liters_refueled, fuel_type, gas_station):
         data = {'year': year, 'month': month, 'day': day, "money_spent": money_spent,
                 "liters_refueled": liters_refueled, "fuel_type": fuel_type, "gas_station": gas_station}
         user_id = login
         self.database.child('users').child(user_id).child('fuel_records').push(data)
 
-    def createServiceRecord(self, login, year, month, day, money_spent, service_type, if_successful, repair_shop):
+    def create_service_record(self, login, year, month, day, money_spent, service_type, if_successful, repair_shop):
         data = {'year': year, 'month': month, 'day': day, "money_spent": money_spent,
                 "service_type": service_type, "if_successful": if_successful, "repair_shop": repair_shop}
         user_id = login
         self.database.child('users').child(user_id).child('service_records').push(data)
 
-    def readUser(self, user_id, desired_item):
+    def read_user(self, user_id, desired_item):
         try:
             users_info = self.database.child('users').child(user_id)
             return users_info.get().val().get(desired_item)
@@ -136,7 +136,7 @@ class FirebaseCRUD:
                 day_info = self.database.child('users').child(user_id).child("fuel_records").child(
                     key).get().val().get("day")
 
-                if day == day_info and month == month_info and year == year_info:
+                if int(day) == int(day_info) and int(month) == int(month_info) and year == year_info:
                     nr_of_fuel_records = nr_of_fuel_records + 1
             return nr_of_fuel_records
         except AttributeError:
@@ -155,7 +155,7 @@ class FirebaseCRUD:
                 day_info = self.database.child('users').child(user_id).child("service_records").child(
                     key).get().val().get("day")
 
-                if day == day_info and month == month_info and year == year_info:
+                if int(day) == int(day_info) and int(month) == int(month_info) and year == year_info:
                     nr_of_service_records = nr_of_service_records + 1
             return nr_of_service_records
         except AttributeError:
@@ -216,10 +216,8 @@ class FirebaseCRUD:
         except AttributeError:
             return month_data, money_data
 
-    def updateUser(self):
-        user_id = '1234536'
-        self.database.child('users').child(user_id).update({'name': 'Mario'})
+    def update_user_password(self,user_id,password):
+        self.database.child('users').child(user_id).update({'password': password})
 
-    def deleteUser(self):
-        user_id = '123456'
+    def delete_user(self, user_id):
         self.database.child('users').child(user_id).remove()

@@ -1,10 +1,8 @@
 from tkinter import *
 import customtkinter as ctk
-from PIL import Image
 
 j = 0
 i = -50
-k = 0
 
 
 class LoadingWindow(ctk.CTk):
@@ -37,7 +35,7 @@ class LoadingWindow(ctk.CTk):
 
         accountLogin = self.login_app.accountLogin
         self.welcomeLabel.configure(
-            text="Hello, " + crud.readUser(accountLogin, "first_name") + "!")
+            text="Hello, " + crud.read_user(accountLogin, "first_name") + "!")
 
         j = 0
         i = -50
