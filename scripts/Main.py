@@ -34,8 +34,6 @@ backgroundImage = ctk.CTkImage(light_image=Image.open("images/background.png"), 
 showImage = ctk.CTkImage(light_image=Image.open("images/show.png"), size=(20, 20))
 hideImage = ctk.CTkImage(light_image=Image.open("images/hide.png"), size=(20, 20))
 
-receiptImage = Image.open("images/receipt.jpg")
-
 crud = scripts.FirebaseCRUD.FirebaseCRUD()
 
 login_app = scripts.LoginWindow.LoginWindow(login_window, register_window, loading_window, mainImage, crud)
@@ -44,10 +42,11 @@ register_app = scripts.RegisterWindow.RegisterWindow(register_window, login_wind
 main_app = scripts.MainWindow.MainWindow(main_window, login_app, login_window, backgroundImage, mainImage2,
                                          accountInfoImage,
                                          dashboardImage, accountImage, creditsImage, logoutImage, fuelImage,
-                                         serviceImage, carImage, plusImage, backImage,hideImage,showImage, receiptImage, crud)
+                                         serviceImage, carImage, plusImage, backImage,hideImage,showImage, crud)
 
 
 def main():
+
     login_window.geometry("400x540")
     login_window.title("MileageMate Login Page")
     login_window._set_appearance_mode("light")
@@ -60,6 +59,7 @@ def main():
     login_window.geometry('+%d+%d' % (x, y))
     login_window.config(background="white")
     login_window.resizable(False, False)
+    login_window.wm_iconbitmap('images/car.ico')
 
     loading_window.title("")
     loading_window._set_appearance_mode("light")
@@ -78,6 +78,7 @@ def main():
     register_window.geometry('+%d+%d' % (x, y))
     register_window.config(background="white")
     register_window.resizable(False, False)
+    register_window.wm_iconbitmap('images/car.ico')
 
     main_window.geometry("1200x700")
     main_window.title("MileageMate")
@@ -91,6 +92,7 @@ def main():
     main_window.geometry('+%d+%d' % (x, y))
     main_window.config(background="white")
     main_window.resizable(False, False)
+    main_window.wm_iconbitmap('images/car.ico')
 
     login_window.protocol("WM_DELETE_WINDOW", on_closing)
     register_window.protocol("WM_DELETE_WINDOW", on_closing)

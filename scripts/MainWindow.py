@@ -1,19 +1,25 @@
-import re
 from datetime import datetime
 from tkinter import *
 import customtkinter as ctk
 import geocoder
-import pytesseract
 import requests
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import pandas as pd
 from tkcalendar import Calendar
 import matplotlib.pyplot as plt
-import cv2
-import numpy as np
 from tkintermapview import TkinterMapView
 
 whichButtonPressed = 1
+
+
+def button_enter(button):
+    button.configure(fg_color="#e3e7e6", text_color="#00a05e")
+
+
+def button_leave(button, button_number):
+    global whichButtonPressed
+    if button_number != whichButtonPressed:
+        button.configure(text_color="#e3e7e6", fg_color="#00a05e")
 
 
 class MainWindow(ctk.CTk):
@@ -22,7 +28,7 @@ class MainWindow(ctk.CTk):
                  dashboard_image, account_image,
                  credits_image,
                  logout_image, fuel_image, service_image, car_image, plus_image, back_image, hide_image, show_image,
-                 receipt_image, crud,
+                 firebase_crud,
                  **kwargs):
         super().__init__(**kwargs)
         self.master = master
@@ -62,42 +68,50 @@ class MainWindow(ctk.CTk):
                                             corner_radius=8, text_color="#00a05e", hover_color="#e3e7e6",
                                             cursor="hand2")
         self.overviewButton.place(x=70, y=100)
-        self.overviewButton.bind('<Enter>', lambda event, button=self.overviewButton: self.button_enter(button))
-        self.overviewButton.bind('<Leave>', lambda event, button=self.overviewButton: self.button_leave(button, 1))
+        self.overviewButton.bind('<Enter>', lambda event, button=self.overviewButton: button_enter(button))
+        self.overviewButton.bind('<Leave>', lambda event, button=self.overviewButton: button_leave(button, 1))
 
         self.fuelButton = ctk.CTkButton(self.leftPane, text="   Fuel", width=200, anchor="w",
                                         font=("Century Gothic", 12, "bold"), height=50, fg_color="#00a05e",
                                         hover_color="#e3e7e6", cursor="hand2")
         self.fuelButton.place(x=70, y=150)
-        self.fuelButton.bind('<Enter>', lambda event, button=self.fuelButton: self.button_enter(button))
-        self.fuelButton.bind('<Leave>', lambda event, button=self.fuelButton: self.button_leave(button, 2))
+        self.fuelButton.bind('<Enter>', lambda event, button=self.fuelButton: button_enter(button))
+        self.fuelButton.bind('<Leave>', lambda event, button=self.fuelButton: button_leave(button, 2))
 
         self.servicesButton = ctk.CTkButton(self.leftPane, text="   Services", width=200, anchor="w",
                                             font=("Century Gothic", 12, "bold"), height=50, fg_color="#00a05e",
                                             hover_color="#e3e7e6", cursor="hand2")
         self.servicesButton.place(x=70, y=200)
-        self.servicesButton.bind('<Enter>', lambda event, button=self.servicesButton: self.button_enter(button))
-        self.servicesButton.bind('<Leave>', lambda event, button=self.servicesButton: self.button_leave(button, 3))
+        self.servicesButton.bind('<Enter>', lambda event, button=self.servicesButton: button_enter(button))
+        self.servicesButton.bind('<Leave>', lambda event, button=self.servicesButton: button_leave(button, 3))
 
         self.carsButton = ctk.CTkButton(self.leftPane, text="   Cars", width=200, anchor="w",
                                         font=("Century Gothic", 12, "bold"), height=50, fg_color="#00a05e",
                                         hover_color="#e3e7e6", cursor="hand2")
         self.carsButton.place(x=70, y=250)
-        self.carsButton.bind('<Enter>', lambda event, button=self.carsButton: self.button_enter(button))
-        self.carsButton.bind('<Leave>', lambda event, button=self.carsButton: self.button_leave(button, 4))
+        self.carsButton.bind('<Enter>', lambda event, button=self.carsButton: button_enter(button))
+        self.carsButton.bind('<Leave>', lambda event, button=self.carsButton: button_leave(button, 4))
 
         self.nearbyButton = ctk.CTkButton(self.leftPane, text="   Nearby", width=200, anchor="w",
                                           font=("Century Gothic", 12, "bold"), height=50, fg_color="#00a05e",
                                           hover_color="#e3e7e6", cursor="hand2")
         self.nearbyButton.place(x=70, y=300)
-        self.nearbyButton.bind('<Enter>', lambda event, button=self.nearbyButton: self.button_enter(button))
-        self.nearbyButton.bind('<Leave>', lambda event, button=self.nearbyButton: self.button_leave(button, 5))
+        self.nearbyButton.bind('<Enter>', lambda event, button=self.nearbyButton: button_enter(button))
+        self.nearbyButton.bind('<Leave>', lambda event, button=self.nearbyButton: button_leave(button, 5))
+
+        self.calculatorButton = ctk.CTkButton(self.leftPane, text="   Consumption Calculator", width=200, anchor="w",
+                                              font=("Century Gothic", 12, "bold"), height=50, fg_color="#00a05e",
+                                              hover_color="#e3e7e6", cursor="hand2")
+        self.calculatorButton.place(x=70, y=350)
+        self.calculatorButton.bind('<Enter>', lambda event, button=self.calculatorButton: button_enter(button))
+        self.calculatorButton.bind('<Leave>', lambda event, button=self.calculatorButton: button_leave(button, 6))
 
         self.overviewButton.bind('<Button-1>', self.overview_button_callback)
         self.fuelButton.bind('<Button-1>', self.fuel_button_callback)
         self.servicesButton.bind('<Button-1>', self.services_button_callback)
         self.carsButton.bind('<Button-1>', self.cars_button_callback)
         self.nearbyButton.bind('<Button-1>', self.nearby_button_callback)
+        self.calculatorButton.bind('<Button-1>', self.calculator_button_callback)
 
         self.dashboardImage = ctk.CTkLabel(self.leftStrip, image=dashboard_image, text="", cursor="hand2")
         self.dashboardImage.place(x=16, y=150)
@@ -119,10 +133,11 @@ class MainWindow(ctk.CTk):
         self.selectedTabIndicator.place(x=4, y=148)
 
         self.accountInfo = ctk.CTkLabel(self.mainPane, text="<Login>", font=("Century Gothic", 15, "bold"), height=20,
-                                        fg_color="#e3e7e6", bg_color="#e3e7e6", text_color="#555555")
+                                        fg_color="#e0eaef", bg_color="#e0eaef", text_color="#555555")
         self.accountInfo.place(x=44, y=18)
 
-        self.accInfoImage = ctk.CTkLabel(self.mainPane, image=account_info_image, text="")
+        self.accInfoImage = ctk.CTkLabel(self.mainPane, image=account_info_image, fg_color="#e0eaef",
+                                         bg_color="#e0eaef", text="")
         self.accInfoImage.place(x=20, y=13)
 
         self.carPane = ctk.CTkFrame(self.mainPane, width=300, height=230, corner_radius=5, fg_color="white",
@@ -202,7 +217,7 @@ class MainWindow(ctk.CTk):
                             headersbackground='white',
                             headersforeground='gray70')
         self.cal.pack(fill="both", expand=True)
-        self.cal.bind("<<CalendarSelected>>", lambda event, crud=crud: self.calendar_click_callback(crud))
+        self.cal.bind("<<CalendarSelected>>", lambda event, crud=firebase_crud: self.calendar_click_callback(crud))
 
         self.calendarInfoPane = ctk.CTkFrame(self.mainPane, width=250, height=300, corner_radius=5, fg_color="white",
                                              bg_color="#e3e7e6")
@@ -271,7 +286,7 @@ class MainWindow(ctk.CTk):
 
         self.backImage = ctk.CTkLabel(self.addFuelPane, image=back_image, text="", cursor="hand2")
         self.backImage.place(x=5, y=15)
-        self.backImage.bind('<Button-1>', lambda event, crud=crud: self.add_fuel_record_back_callback(crud))
+        self.backImage.bind('<Button-1>', lambda event, crud=firebase_crud: self.add_fuel_record_back_callback(crud))
 
         self.addNewFuelRecordLabel = ctk.CTkLabel(self.addFuelPane, text="Adding new fuel purchase record",
                                                   text_color="#00a05e", width=810,
@@ -318,7 +333,7 @@ class MainWindow(ctk.CTk):
         self.yearLabel = ctk.CTkLabel(self.addFuelPane, text="Year:", text_color="#555555",
                                       font=("Trebuchet", 15, "bold"),
                                       bg_color="white")
-        self.moneyLabel = ctk.CTkLabel(self.addFuelPane, text="Money Spent:", text_color="#555555",
+        self.moneyLabel = ctk.CTkLabel(self.addFuelPane, text="Money Spent [zł]:", text_color="#555555",
                                        font=("Trebuchet", 15, "bold"),
                                        bg_color="white")
         self.litersLabel = ctk.CTkLabel(self.addFuelPane, text="Liters Refueled:", text_color="#555555",
@@ -335,7 +350,7 @@ class MainWindow(ctk.CTk):
                                                     font=("Trebuchet", 14, "bold"),
                                                     width=310, height=35, corner_radius=5, hover_color="#dbdbd9",
                                                     bg_color="white", border_width=1, text_color="#555555",
-                                                    command=lambda: self.add_new_fuel_record(crud))
+                                                    command=lambda: self.add_new_fuel_record(firebase_crud))
 
         self.dayTextBox.place(x=90, y=120)
         self.monthTextBox.place(x=90, y=220)
@@ -377,7 +392,7 @@ class MainWindow(ctk.CTk):
 
         self.backImage = ctk.CTkLabel(self.addServicesPane, image=back_image, text="", cursor="hand2")
         self.backImage.place(x=5, y=15)
-        self.backImage.bind('<Button-1>', lambda event, crud=crud: self.add_service_record_back_callback(crud))
+        self.backImage.bind('<Button-1>', lambda event, crud=firebase_crud: self.add_service_record_back_callback(crud))
 
         self.addNewServiceRecordLabel = ctk.CTkLabel(self.addServicesPane, text="Adding new service record",
                                                      text_color="#00a05e", width=810,
@@ -430,7 +445,7 @@ class MainWindow(ctk.CTk):
         self.yearLabel2 = ctk.CTkLabel(self.addServicesPane, text="Year:", text_color="#555555",
                                        font=("Trebuchet", 15, "bold"),
                                        bg_color="white")
-        self.moneyLabel2 = ctk.CTkLabel(self.addServicesPane, text="Money Spent:", text_color="#555555",
+        self.moneyLabel2 = ctk.CTkLabel(self.addServicesPane, text="Money Spent [zł]:", text_color="#555555",
                                         font=("Trebuchet", 15, "bold"),
                                         bg_color="white")
         self.serviceTypeLabel = ctk.CTkLabel(self.addServicesPane, text="Service Type:", text_color="#555555",
@@ -447,7 +462,7 @@ class MainWindow(ctk.CTk):
                                                        font=("Trebuchet", 14, "bold"),
                                                        width=310, height=35, corner_radius=5, hover_color="#dbdbd9",
                                                        bg_color="white", border_width=1, text_color="#555555",
-                                                       command=lambda: self.add_new_service_record(crud))
+                                                       command=lambda: self.add_new_service_record(firebase_crud))
 
         self.dayTextBox2.place(x=90, y=120)
         self.monthTextBox2.place(x=90, y=220)
@@ -486,7 +501,7 @@ class MainWindow(ctk.CTk):
                                                border_width=0, button_color="#878787",
                                                values=self.api_callback("makes", "", "", "", ""),
                                                dropdown_fg_color="#878787", dropdown_font=("Trebuchet", 12, "bold"),
-                                               command=self.makeComboBox_callback)
+                                               command=self.make_combo_box_callback)
         self.carMakeComboBox.place(x=50, y=120)
 
         self.carTypeLabel = ctk.CTkLabel(self.carsPane, text="Body type:", text_color="#555555",
@@ -499,7 +514,7 @@ class MainWindow(ctk.CTk):
                                                border_width=0, button_color="#878787",
                                                values=self.api_callback("types", "", "", "", ""),
                                                dropdown_fg_color="#878787", dropdown_font=("Trebuchet", 12, "bold"),
-                                               command=self.typeComboBox_callback)
+                                               command=self.type_combo_box_callback)
         self.carTypeComboBox.place(x=50, y=220)
 
         self.carModelLabel = ctk.CTkLabel(self.carsPane, text="Model:", text_color="#555555",
@@ -514,7 +529,7 @@ class MainWindow(ctk.CTk):
                                                 values=self.api_callback("models", self.carMakeComboBox.get(),
                                                                          self.carTypeComboBox.get(), "", ""),
                                                 dropdown_fg_color="#878787", dropdown_font=("Trebuchet", 12, "bold"),
-                                                command=self.modelComboBox_callback)
+                                                command=self.model_combo_box_callback)
         self.carModelComboBox.place(x=250, y=120)
 
         self.carYearLabel = ctk.CTkLabel(self.carsPane, text="Year:", text_color="#555555",
@@ -535,7 +550,7 @@ class MainWindow(ctk.CTk):
         self.addCar = ctk.CTkButton(self.carsPane, text="Save your\nchoice", fg_color="#146734",
                                     font=("Trebuchet", 14, "bold"),
                                     width=120, height=50, corner_radius=5, hover_color="#12552d", bg_color="white",
-                                    command=lambda: self.add_car_callback(crud))
+                                    command=lambda: self.add_car_callback(firebase_crud))
         self.addCar.place(x=440, y=160)
 
         self.nearbyPane = ctk.CTkFrame(self.mainPane, width=700, height=550, corner_radius=15,
@@ -665,7 +680,8 @@ class MainWindow(ctk.CTk):
                                                          width=100, height=30, corner_radius=5, hover_color="#12552d",
                                                          bg_color="white",
                                                          cursor="hand2",
-                                                         command=lambda: self.confirm_password_change_callback(crud))
+                                                         command=lambda: self.confirm_password_change_callback(
+                                                             firebase_crud))
         self.confirmPasswordChangeButton.place(x=40, y=245)
 
         self.cancelPasswordChangeButton = ctk.CTkButton(self.changePasswordPane, text="Cancel", fg_color="#555555",
@@ -690,8 +706,9 @@ class MainWindow(ctk.CTk):
                                                         width=100, height=30, corner_radius=5, hover_color="#8c0707",
                                                         bg_color="white",
                                                         cursor="hand2",
-                                                        command=lambda: self.confirm_account_delete_callback(crud,
-                                                                                                             login_window))
+                                                        command=lambda: self.confirm_account_delete_callback(
+                                                            firebase_crud,
+                                                            login_window))
         self.confirmAccountDeleteButton.place(x=40, y=90)
 
         self.cancelAccountDeleteButton = ctk.CTkButton(self.deleteAccountPane, text="Cancel", fg_color="#555555",
@@ -756,9 +773,123 @@ class MainWindow(ctk.CTk):
                                           cursor="hand2", command=lambda: self.logout_callback(login_window))
         self.logoutButton.place(x=160, y=115)
 
-        self.mainPane.bind("<Map>", lambda event, crud=crud: self.accountInfoUpdate(crud))
+        self.calculatorPane = ctk.CTkFrame(self.mainPane, width=600, height=400, corner_radius=15,
+                                           fg_color="white",
+                                           bg_color="#e3e7e6")
+        self.calculatorHeaderLabel = ctk.CTkLabel(self.calculatorPane,
+                                                  text="Average fuel consumption calculator per 100 km", width=600,
+                                                  fg_color="white", text_color="#00a05e",
+                                                  font=("Century Gothic", 20, "bold"), justify=CENTER)
+        self.calculatorHeaderLabel.place(x=0, y=20)
 
-        # self.scanReceiptImage()
+        self.burnedFuelLabel = ctk.CTkLabel(self.calculatorPane, text="Burned fuel in liters",
+                                            text_color="#555555",
+                                            font=("Trebuchet", 12, "bold"),
+                                            bg_color="white")
+        self.burnedFuelLabel.place(x=40, y=70)
+
+        self.burnedFuelTextBox = ctk.CTkTextbox(self.calculatorPane, width=260, height=30, corner_radius=5,
+                                                fg_color="#dbfde7",
+                                                bg_color="white", text_color="#555555", font=("Trebuchet", 12, "bold"),
+                                                border_width=0)
+        self.burnedFuelTextBox.place(x=40, y=100)
+
+        self.kmTraveledLabel = ctk.CTkLabel(self.calculatorPane, text="Number of kilometers traveled",
+                                            text_color="#555555",
+                                            font=("Trebuchet", 12, "bold"),
+                                            bg_color="white")
+        self.kmTraveledLabel.place(x=40, y=140)
+
+        self.kmTraveledTextBox = ctk.CTkTextbox(self.calculatorPane, width=260, height=30, corner_radius=5,
+                                                fg_color="#dbfde7",
+                                                bg_color="white", text_color="#555555", font=("Trebuchet", 12, "bold"),
+                                                border_width=0)
+        self.kmTraveledTextBox.place(x=40, y=170)
+
+        self.fuelPriceLabel = ctk.CTkLabel(self.calculatorPane, text="Price of a liter of fuel (optional)",
+                                           text_color="#555555",
+                                           font=("Trebuchet", 12, "bold"),
+                                           bg_color="white")
+        self.fuelPriceLabel.place(x=40, y=210)
+
+        self.fuelPriceTextBox = ctk.CTkTextbox(self.calculatorPane, width=260, height=30, corner_radius=5,
+                                               fg_color="#dbfde7",
+                                               bg_color="white", text_color="#555555", font=("Trebuchet", 12, "bold"),
+                                               border_width=0)
+        self.fuelPriceTextBox.place(x=40, y=240)
+
+        self.calculatorTipLabel = ctk.CTkLabel(self.calculatorPane, text="Calculator Tip",
+                                               text_color="#555555",
+                                               font=("Trebuchet", 17, "bold"),
+                                               bg_color="white", justify=CENTER, width=230)
+        self.calculatorTipLabel.place(x=330, y=110)
+
+        self.calculatorTipTextLabel = ctk.CTkLabel(self.calculatorPane,
+                                                   text="To calculate fuel consumption, you need to"
+                                                        " reset the odometer after fully refueling, and"
+                                                        " then fillup again after driving a certain"
+                                                        " distance. This way you will receive the number"
+                                                        " of kilometers traveled on a specific number"
+                                                        " of liters of fuel.",
+                                                   text_color="#00a05e",
+                                                   font=("Trebuchet", 12, "bold"),
+                                                   bg_color="white", justify="center", width=230, wraplength=230)
+        self.calculatorTipTextLabel.place(x=330, y=140)
+
+        self.calculateButton = ctk.CTkButton(self.calculatorPane, text="Calculate", fg_color="#146734",
+                                             font=("Trebuchet", 14, "bold"),
+                                             width=130, height=40, corner_radius=5, hover_color="#12552d",
+                                             bg_color="white",
+                                             cursor="hand2", command=self.calculate_callback)
+        self.calculateButton.place(x=105, y=310)
+
+        self.fuelConsumptionLabel = ctk.CTkLabel(self.calculatorPane, text="Fuel consumption:",
+                                                 text_color="#555555",
+                                                 font=("Trebuchet", 14, "bold"),
+                                                 bg_color="white")
+        self.fuelConsumptionLabel.place(x=310, y=300)
+
+        self.fuelConsumptionValueLabel = ctk.CTkLabel(self.calculatorPane, text="0 l/100km",
+                                                      text_color="#555555",
+                                                      font=("Trebuchet", 14, "bold"),
+                                                      bg_color="white")
+        self.fuelConsumptionValueLabel.place(x=460, y=300)
+
+        self.travelCostLabel = ctk.CTkLabel(self.calculatorPane, text="Cost of 100 kilometers travel:",
+                                            text_color="#555555",
+                                            font=("Trebuchet", 14, "bold"),
+                                            bg_color="white")
+        self.travelCostLabel.place(x=310, y=335)
+
+        self.travelCostValueLabel = ctk.CTkLabel(self.calculatorPane, text="0 zł",
+                                                 text_color="#555555",
+                                                 font=("Trebuchet", 14, "bold"),
+                                                 bg_color="white")
+        self.travelCostValueLabel.place(x=540, y=335)
+
+        self.mainPane.bind("<Map>", lambda event, crud=firebase_crud: self.account_info_update(crud))
+
+    def calculate_callback(self):
+        burnedFuel = self.burnedFuelTextBox.get("0.0", 'end-1c')
+        kmTraveled = self.kmTraveledTextBox.get("0.0", 'end-1c')
+        fuelPrice = self.fuelPriceTextBox.get("0.0", 'end-1c')
+        try:
+            burnedFuel = float(burnedFuel)
+            kmTraveled = float(kmTraveled)
+        except ValueError:
+            return
+
+        fuelConsumption = round(burnedFuel / kmTraveled * 100, 1)
+        self.fuelConsumptionValueLabel.configure(text=str(fuelConsumption) + " l/100km")
+        self.fuelConsumptionValueLabel.update()
+        if fuelPrice != "":
+            try:
+                fuelPrice = float(fuelPrice)
+            except ValueError:
+                return
+            travelCost = round(fuelConsumption * fuelPrice, 1)
+            self.travelCostValueLabel.configure(text=str(travelCost) + " zł")
+            self.travelCostValueLabel.update()
 
     def change_password_callback(self):
         self.accountPane.place_forget()
@@ -802,7 +933,7 @@ class MainWindow(ctk.CTk):
                                  self.carModelComboBox.get(), self.carYearComboBox.get())
             self.carNameLabel.configure(text=self.carMakeComboBox.get() + " " + self.carModelComboBox.get())
 
-    def makeComboBox_callback(self, choice):
+    def make_combo_box_callback(self, choice):
         models = self.api_callback("models", choice, self.carTypeComboBox.get(), "", "")
         self.carModelComboBox.configure(values=models)
         if models:
@@ -810,9 +941,9 @@ class MainWindow(ctk.CTk):
         else:
             self.carModelComboBox.set("")
 
-        self.modelComboBox_callback("")
+        self.model_combo_box_callback("")
 
-    def typeComboBox_callback(self, choice):
+    def type_combo_box_callback(self, choice):
         models = self.api_callback("models", self.carMakeComboBox.get(), choice, "", "")
         self.carModelComboBox.configure(values=models)
         if models:
@@ -820,9 +951,9 @@ class MainWindow(ctk.CTk):
         else:
             self.carModelComboBox.set("")
 
-        self.modelComboBox_callback("")
+        self.model_combo_box_callback("")
 
-    def modelComboBox_callback(self, choice):
+    def model_combo_box_callback(self, choice):
         years = self.api_callback("years", self.carMakeComboBox.get(), self.carTypeComboBox.get(),
                                   self.carModelComboBox.get(), "")
         self.carYearComboBox.configure(values=years)
@@ -831,7 +962,7 @@ class MainWindow(ctk.CTk):
         else:
             self.carYearComboBox.set("")
 
-    def api_callback(self, desired_data, make, type, model, year):
+    def api_callback(self, desired_data, make, body_type, model, year):
         self.master.after(1000)
         querystring = None
 
@@ -850,19 +981,19 @@ class MainWindow(ctk.CTk):
             return sorted(response.json())
         elif desired_data == "models":
             url = "https://car-data.p.rapidapi.com/cars"
-            querystring = {"limit": "50", "page": "0", "make": make, "type": type}
+            querystring = {"limit": "50", "page": "0", "make": make, "type": body_type}
             response = requests.get(url, headers=headers, params=querystring)
             models = set(car['model'] for car in response.json())
             return sorted(models)
         elif desired_data == "years":
             url = "https://car-data.p.rapidapi.com/cars"
-            querystring = {"limit": "50", "page": "0", "make": make, "type": type, "model": model}
+            querystring = {"limit": "50", "page": "0", "make": make, "type": body_type, "model": model}
             response = requests.get(url, headers=headers, params=querystring)
             years = set(str(car['year']) for car in response.json())
             return sorted(years)
         elif desired_data == "car":
             url = "https://car-data.p.rapidapi.com/cars"
-            querystring = {"limit": "50", "page": "0", "make": make, "type": type, "model": model, "year": year}
+            querystring = {"limit": "50", "page": "0", "make": make, "type": body_type, "model": model, "year": year}
             response = requests.get(url, headers=headers, params=querystring)
             return response.json()
 
@@ -873,74 +1004,12 @@ class MainWindow(ctk.CTk):
         self.master.after(1, self.dash_button_callback_effect)
         self.hide_logout_components()
         self.hide_account_components()
+        self.hide_credits_components()
         self.master.withdraw()
         self.login_app.accountLogin = ""
         self.login_app.loginTextBox.delete('1.0', END)
         self.login_app.passwordTextBox.delete(0, END)
         login_window.deiconify()
-
-    def scan_receipt_image(self):
-        image = cv2.imread('images/receipt.jpg')
-
-        # Konwersja na odcienie szarości
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-        # Usunięcie szumu
-        blurred = cv2.medianBlur(gray, 5)
-
-        # Binaryzacja
-        thresholded = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-
-        # Dylatacja
-        kernel = np.ones((1, 1), np.uint8)
-        dilated = cv2.dilate(thresholded, kernel, iterations=1)
-
-        # Erozja
-        eroded = cv2.erode(dilated, kernel, iterations=1)
-
-        # Otwarcie
-        opened = cv2.morphologyEx(eroded, cv2.MORPH_OPEN, kernel)
-
-        # Detekcja krawędzi Canny
-        edges = cv2.Canny(opened, 50, 300)
-
-        # Korekcja nachylenia
-        coords = np.column_stack(np.where(edges > 0))
-        angle = cv2.minAreaRect(coords)[-1]
-        if angle < -45:
-            angle = -(90 + angle)
-        else:
-            angle = -angle
-        (h, w) = edges.shape[:2]
-        center = (w // 2, h // 2)
-        M = cv2.getRotationMatrix2D(center, angle, 1.0)
-        rotated = cv2.warpAffine(edges, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
-
-        resized_image = cv2.resize(blurred, (465, 855))
-        cv2.imshow('Processed Image', resized_image)
-
-        custom_config = r'--oem 3 --psm 11'
-        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-        result = pytesseract.image_to_string(blurred, lang="pol", config=custom_config)
-
-        pattern_dot = re.compile(r'PLN[^\d]*(\d+\.\d{2})')
-        pattern_comma = re.compile(r'PLN[^\d]*(\d+,[^\d]\d{2})')
-
-        match_dot = re.search(pattern_dot, result)
-        match_comma = re.search(pattern_comma, result)
-
-        print(result)
-
-        if match_dot:
-            spent_on_fuel_dot = float(match_dot.group(1))
-            print(f'Kwota wydana na paliwo (kropka): {spent_on_fuel_dot} PLN')
-
-        elif match_comma:
-            spent_on_fuel_comma = float(match_comma.group(1).replace(',', '.').replace(' ', ''))
-            print(f'Kwota wydana na paliwo (przecinek): {spent_on_fuel_comma} PLN')
-
-        else:
-            print('Nie znaleziono informacji o kwocie wydanej na paliwo.')
 
     def add_new_fuel_record(self, crud):
         accountLogin = self.login_app.accountLogin
@@ -951,11 +1020,13 @@ class MainWindow(ctk.CTk):
         liters = self.litersTextBox.get("0.0", 'end-1c')
         fueltype = self.fueltypeTextBox.get("0.0", 'end-1c')
         station = self.stationTextBox.get("0.0", 'end-1c')
-        crud.create_fuel_record(self.login_app.accountLogin, year, month, day, money, liters, fueltype, station)
-        self.load_fuel_records(crud)
-        self.calendar_click_callback(crud)
-        self.make_plot(crud, accountLogin)
-        self.nrOfRefuelingsLabel.configure(text=str(len(self.fuelRecordPanes)))
+
+        if int(year) <= datetime.now().year and 12 >= int(month) >= 1 and 31 >= int(day) >= 1:
+            crud.create_fuel_record(self.login_app.accountLogin, year, month, day, money, liters, fueltype, station)
+            self.load_fuel_records(crud)
+            self.calendar_click_callback(crud)
+            self.make_plot(crud, accountLogin)
+            self.nrOfRefuelingsLabel.configure(text=str(len(self.fuelRecordPanes)))
 
     def add_new_service_record(self, crud):
         accountLogin = self.login_app.accountLogin
@@ -966,12 +1037,14 @@ class MainWindow(ctk.CTk):
         serviceType = self.serviceTypeTextBox.get("0.0", 'end-1c')
         ifSuccessful = self.ifSuccessfulTextBox.get("0.0", 'end-1c')
         repairShop = self.repairShopTextBox.get("0.0", 'end-1c')
-        crud.create_service_record(self.login_app.accountLogin, year, month, day, money, serviceType, ifSuccessful,
-                                   repairShop)
-        self.load_services_records(crud)
-        self.calendar_click_callback(crud)
-        self.make_plot(crud, accountLogin)
-        self.nrOfServicesLabel.configure(text=str(len(self.serviceRecordPanes)))
+
+        if int(year) <= datetime.now().year and 12 >= int(month) >= 1 and 31 >= int(day) >= 1:
+            crud.create_service_record(self.login_app.accountLogin, year, month, day, money, serviceType, ifSuccessful,
+                                       repairShop)
+            self.load_services_records(crud)
+            self.calendar_click_callback(crud)
+            self.make_plot(crud, accountLogin)
+            self.nrOfServicesLabel.configure(text=str(len(self.serviceRecordPanes)))
 
     def add_fuel_record_callback(self, event):
         self.addFuelPane.place(x=20, y=60)
@@ -1035,6 +1108,8 @@ class MainWindow(ctk.CTk):
                 self.show_cars_components()
             elif whichButtonPressed == 5:
                 self.show_nearby_components()
+            elif whichButtonPressed == 6:
+                self.show_calculator_components()
             self.show_account_info_components()
             self.leftPane.update()
 
@@ -1052,6 +1127,7 @@ class MainWindow(ctk.CTk):
             self.hide_services_components()
             self.hide_cars_components()
             self.hide_nearby_components()
+            self.hide_calculator_components()
             self.master.after(1, self.acc_button_callback_effect)
 
     def acc_button_callback_effect(self):
@@ -1079,6 +1155,7 @@ class MainWindow(ctk.CTk):
             self.hide_services_components()
             self.hide_cars_components()
             self.hide_nearby_components()
+            self.hide_calculator_components()
             self.master.after(1, self.cred_button_callback_effect)
 
     def cred_button_callback_effect(self):
@@ -1106,6 +1183,7 @@ class MainWindow(ctk.CTk):
             self.hide_services_components()
             self.hide_cars_components()
             self.hide_nearby_components()
+            self.hide_calculator_components()
             self.master.after(1, self.log_button_callback_effect)
 
     def log_button_callback_effect(self):
@@ -1119,8 +1197,8 @@ class MainWindow(ctk.CTk):
             self.leftPane.update()
             self.show_logout_components()
 
-    def make_plot(self, crud, accountLogin):
-        month_data, money_data = crud.read_money_spent(accountLogin)
+    def make_plot(self, crud, account_login):
+        month_data, money_data = crud.read_money_spent(account_login)
         current_date = datetime.now()
         months = [
             'January', 'February', 'March', 'April',
@@ -1159,7 +1237,7 @@ class MainWindow(ctk.CTk):
         ax1.set_xticklabels(last_seven_months, rotation=0)
         ax1.set_title('Money spent in recent months')
 
-    def accountInfoUpdate(self, crud):
+    def account_info_update(self, crud):
         accountFirstName = self.login_app.accountFirstName
         accountLogin = self.login_app.accountLogin
         accountEmail = self.login_app.accountEmail
@@ -1178,14 +1256,6 @@ class MainWindow(ctk.CTk):
         self.nrOfServicesLabel.update()
         self.calendar_click_callback(crud)
 
-    def button_enter(self, button):
-        button.configure(fg_color="#e3e7e6", text_color="#00a05e")
-
-    def button_leave(self, button, buttonNumber):
-        global whichButtonPressed
-        if buttonNumber != whichButtonPressed:
-            button.configure(text_color="#e3e7e6", fg_color="#00a05e")
-
     def overview_button_callback(self, event):
         global whichButtonPressed
         whichButtonPressed = 1
@@ -1193,12 +1263,14 @@ class MainWindow(ctk.CTk):
         self.fuelButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
         self.servicesButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
         self.carsButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
+        self.calculatorButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
 
         self.show_overview_components()
         self.hide_fuel_components()
         self.hide_services_components()
         self.hide_cars_components()
         self.hide_nearby_components()
+        self.hide_calculator_components()
 
     def fuel_button_callback(self, event):
         global whichButtonPressed
@@ -1207,12 +1279,14 @@ class MainWindow(ctk.CTk):
         self.nearbyButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
         self.servicesButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
         self.carsButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
+        self.calculatorButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
 
         self.show_fuel_components()
         self.hide_overview_components()
         self.hide_services_components()
         self.hide_cars_components()
         self.hide_nearby_components()
+        self.hide_calculator_components()
 
     def services_button_callback(self, event):
         global whichButtonPressed
@@ -1221,12 +1295,14 @@ class MainWindow(ctk.CTk):
         self.fuelButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
         self.nearbyButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
         self.carsButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
+        self.calculatorButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
 
         self.show_services_components()
         self.hide_overview_components()
         self.hide_fuel_components()
         self.hide_cars_components()
         self.hide_nearby_components()
+        self.hide_calculator_components()
 
     def cars_button_callback(self, event):
         global whichButtonPressed
@@ -1235,12 +1311,14 @@ class MainWindow(ctk.CTk):
         self.fuelButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
         self.servicesButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
         self.nearbyButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
+        self.calculatorButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
 
         self.show_cars_components()
         self.hide_overview_components()
         self.hide_fuel_components()
         self.hide_services_components()
         self.hide_nearby_components()
+        self.hide_calculator_components()
 
     def nearby_button_callback(self, event):
         global whichButtonPressed
@@ -1249,8 +1327,26 @@ class MainWindow(ctk.CTk):
         self.fuelButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
         self.servicesButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
         self.carsButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
+        self.calculatorButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
 
         self.show_nearby_components()
+        self.hide_overview_components()
+        self.hide_fuel_components()
+        self.hide_services_components()
+        self.hide_cars_components()
+        self.hide_calculator_components()
+
+    def calculator_button_callback(self, event):
+        global whichButtonPressed
+        whichButtonPressed = 6
+        self.overviewButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
+        self.fuelButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
+        self.servicesButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
+        self.carsButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
+        self.nearbyButton.configure(text_color="#e3e7e6", fg_color="#00a05e")
+
+        self.show_calculator_components()
+        self.hide_nearby_components()
         self.hide_overview_components()
         self.hide_fuel_components()
         self.hide_services_components()
@@ -1323,6 +1419,12 @@ class MainWindow(ctk.CTk):
 
     def hide_logout_components(self):
         self.logoutPane.place_forget()
+
+    def show_calculator_components(self):
+        self.calculatorPane.place(x=165, y=150)
+
+    def hide_calculator_components(self):
+        self.calculatorPane.place_forget()
 
     def show_account_components(self):
         self.accountPane.place(x=315, y=175)
@@ -1451,11 +1553,11 @@ class MainWindow(ctk.CTk):
             j = j + 1
 
     def load_car_data(self, crud, account_login):
-        make, type, model, year = crud.read_car_data(account_login)
+        make, body_type, model, year = crud.read_car_data(account_login)
         if make and model:
             self.carNameLabel.configure(text=make + " " + model)
             self.carMakeComboBox.set(make)
-            self.carTypeComboBox.set(type)
+            self.carTypeComboBox.set(body_type)
             self.carModelComboBox.set(model)
             self.carYearComboBox.set(year)
         else:

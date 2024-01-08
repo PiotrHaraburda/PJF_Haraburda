@@ -6,7 +6,7 @@ i = -50
 
 
 class LoadingWindow(ctk.CTk):
-    def __init__(self, master,login_app, main_app_window, mainImage,crud, **kwargs):
+    def __init__(self, master, login_app, main_app_window, main_image, firebase_crud, **kwargs):
         super().__init__(**kwargs)
         self.master = master
         self.main_app_window = main_app_window
@@ -14,14 +14,14 @@ class LoadingWindow(ctk.CTk):
 
         self.welcomeLabel = ctk.CTkLabel(self.master, text="Hello, ", text_color="#12833b",
                                          font=("Trebuchet", 28, "bold"),
-                                         bg_color="white",width=850,justify=CENTER)
+                                         bg_color="white", width=850, justify=CENTER)
         self.welcomeLabel.place(x=0, y=-100)
-        self.slidingCarLabel = ctk.CTkLabel(self.master, image=mainImage, text="", bg_color="white")
+        self.slidingCarLabel = ctk.CTkLabel(self.master, image=main_image, text="", bg_color="white")
 
-        self.welcomeLabel.bind("<Map>", lambda event,crud=crud: self.windowInit(crud))
+        self.welcomeLabel.bind("<Map>", lambda event, crud=firebase_crud: self.window_init(crud))
 
-    def windowInit(self,crud):
-        global i, j, k
+    def window_init(self, crud):
+        global i, j
 
         self.master.geometry("400x540")
         w = 400
@@ -39,11 +39,10 @@ class LoadingWindow(ctk.CTk):
 
         j = 0
         i = -50
-        k = 0
         self.master.overrideredirect(True)
-        self.master.after(1, self.resizeWindow)
+        self.master.after(1, self.resize_window)
 
-    def resizeWindow(self):
+    def resize_window(self):
         global j
         j += 1
         if j < 800:
@@ -56,13 +55,13 @@ class LoadingWindow(ctk.CTk):
             self.master.geometry('+%d+%d' % (x, y))
             self.master.geometry(str(w) + "x540")
             self.master.update()
-            self.master.after(1, self.resizeWindow)
+            self.master.after(1, self.resize_window)
         else:
             self.master.update()
             self.welcomeLabel.place(x=0, y=0)
-            self.master.after(1, self.welcomeSlide)
+            self.master.after(1, self.welcome_slide)
 
-    def welcomeSlide(self):
+    def welcome_slide(self):
         global i
         i += 1
         if i < 1600:
@@ -72,7 +71,7 @@ class LoadingWindow(ctk.CTk):
             if i < 900:
                 self.slidingCarLabel.place(x=i - 0.3, y=400)
                 self.slidingCarLabel.update()
-            self.master.after(1, self.welcomeSlide)
+            self.master.after(1, self.welcome_slide)
         else:
             self.master.update()
             self.welcomeLabel.place(x=0, y=-100)

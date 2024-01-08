@@ -12,7 +12,7 @@ class FirebaseCRUD:
         user_id = login
         self.database.child('users').child(user_id).set(data)
 
-    def create_car_data(self,user_id,make,type,model,year):
+    def create_car_data(self, user_id, make, type, model, year):
         data = {'make': make, 'model': model, 'year': year, "type": type}
         self.database.child('users').child(user_id).child("car_data").set(data)
 
@@ -35,10 +35,10 @@ class FirebaseCRUD:
         except AttributeError:
             return ""
 
-    def read_car_data(self,user_id):
+    def read_car_data(self, user_id):
         make_info = []
         type_info = []
-        model_info =[]
+        model_info = []
         year_info = []
         try:
             make_info = self.database.child('users').child(user_id).child("car_data").get().val().get("make")
@@ -46,9 +46,9 @@ class FirebaseCRUD:
             model_info = self.database.child('users').child(user_id).child("car_data").get().val().get("model")
             year_info = self.database.child('users').child(user_id).child("car_data").get().val().get("year")
         except AttributeError:
-            return make_info,type_info,model_info,year_info
+            return make_info, type_info, model_info, year_info
 
-        return make_info,type_info,model_info,year_info
+        return make_info, type_info, model_info, year_info
 
     def read_fuel_records(self, user_id):
         year_data = []
@@ -216,7 +216,7 @@ class FirebaseCRUD:
         except AttributeError:
             return month_data, money_data
 
-    def update_user_password(self,user_id,password):
+    def update_user_password(self, user_id, password):
         self.database.child('users').child(user_id).update({'password': password})
 
     def delete_user(self, user_id):

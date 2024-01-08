@@ -4,13 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="861f2633-f18d-4148-9f74-f23be938affc" name="Changes" comment="- Car data retrieving from api integrated with overview pane&#10;- Nearby pane designed&#10;- TKintermapview with Openstreetmap tile server integrated">
-      <change afterPath="$PROJECT_DIR$/images/background.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/credits.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/hide.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/show.png" afterDir="false" />
+    <list default="true" id="861f2633-f18d-4148-9f74-f23be938affc" name="Changes" comment="- Account pane created&#10;- Ability to delete an account has been implemented&#10;- Ability to change the password has been implemented&#10;- Credits pane created&#10;- Function names refactored">
+      <change afterPath="$PROJECT_DIR$/images/car.ico" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/settings.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/FirebaseCRUD.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/FirebaseCRUD.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/LoadingWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/LoadingWindow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/LoginWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/LoginWindow.py" afterDir="false" />
@@ -117,7 +113,12 @@
       <workItem from="1703852260843" duration="15502000" />
       <workItem from="1703939585498" duration="35850000" />
       <workItem from="1704024554600" duration="11013000" />
-      <workItem from="1704196691236" duration="18783000" />
+      <workItem from="1704196691236" duration="19637000" />
+      <workItem from="1704217555145" duration="723000" />
+      <workItem from="1704500354162" duration="103000" />
+      <workItem from="1704540832165" duration="108000" />
+      <workItem from="1704565651788" duration="1126000" />
+      <workItem from="1704742923523" duration="11310000" />
     </task>
     <task id="LOCAL-00001" summary="- Project structure repaired&#10;(Files were copied from my other GitHub repository https://github.com/PiotrHaraburda/MileageMate.git)">
       <option name="closed" value="true" />
@@ -199,7 +200,15 @@
       <option name="project" value="LOCAL" />
       <updated>1704036744973</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="- Account pane created&#10;- Ability to delete an account has been implemented&#10;- Ability to change the password has been implemented&#10;- Credits pane created&#10;- Function names refactored">
+      <option name="closed" value="true" />
+      <created>1704216493872</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1704216493873</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -215,10 +224,11 @@
     <MESSAGE value="- Calendar with fuel data synchronized&#10;- Image OCR tested" />
     <MESSAGE value="- Services tab implemented&#10;- Logout function implemented&#10;- LoginWindow.py divided into two files: LoginWindow.py and LoadingWindow.py&#10;- Cars tab implemented&#10;- Cars api implemented" />
     <MESSAGE value="- Car data retrieving from api integrated with overview pane&#10;- Nearby pane designed&#10;- TKintermapview with Openstreetmap tile server integrated" />
-    <option name="LAST_COMMIT_MESSAGE" value="- Car data retrieving from api integrated with overview pane&#10;- Nearby pane designed&#10;- TKintermapview with Openstreetmap tile server integrated" />
+    <MESSAGE value="- Account pane created&#10;- Ability to delete an account has been implemented&#10;- Ability to change the password has been implemented&#10;- Credits pane created&#10;- Function names refactored" />
+    <option name="LAST_COMMIT_MESSAGE" value="- Account pane created&#10;- Ability to delete an account has been implemented&#10;- Ability to change the password has been implemented&#10;- Credits pane created&#10;- Function names refactored" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/PJF_Haraburda$FirebaseConnection.coverage" NAME="FirebaseConnection Coverage Results" MODIFIED="1703593622620" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/package" />
-    <SUITE FILE_PATH="coverage/PJF_Haraburda$Main.coverage" NAME="Main Coverage Results" MODIFIED="1704215561153" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/PJF_Haraburda$Main.coverage" NAME="Main Coverage Results" MODIFIED="1704755864857" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

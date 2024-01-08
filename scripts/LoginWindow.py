@@ -6,7 +6,7 @@ i = -50
 
 class LoginWindow(ctk.CTk):
 
-    def __init__(self, master, other_window, main_app_window, mainImage, crud, **kwargs):
+    def __init__(self, master, other_window, main_app_window, main_image, crud, **kwargs):
         super().__init__(**kwargs)
         self.master = master
         self.loading_window = main_app_window
@@ -16,7 +16,7 @@ class LoginWindow(ctk.CTk):
         self.accountEmail = ""
         self.accountPassword = ""
 
-        self.imageLabel = ctk.CTkLabel(self.master, image=mainImage, text="", bg_color="white")
+        self.imageLabel = ctk.CTkLabel(self.master, image=main_image, text="", bg_color="white")
         self.imageLabel.place(x=280, y=35)
 
         self.mainLabel = ctk.CTkLabel(self.master, text="MileageMate", text_color="#555555",
@@ -76,8 +76,7 @@ class LoginWindow(ctk.CTk):
         self.welcomeLabel = ctk.CTkLabel(self.master, text="Hello, ", text_color="#12833b",
                                          font=("Trebuchet", 28, "bold"),
                                          bg_color="white")
-        self.slidingCarLabel = ctk.CTkLabel(self.master, image=mainImage, text="", bg_color="white")
-
+        self.slidingCarLabel = ctk.CTkLabel(self.master, image=main_image, text="", bg_color="white")
 
     def register_callback(self, other_window):
         self.master.withdraw()

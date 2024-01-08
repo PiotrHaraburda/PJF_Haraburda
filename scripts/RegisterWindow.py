@@ -3,11 +3,11 @@ import customtkinter as ctk
 
 class RegisterWindow(ctk.CTk):
 
-    def __init__(self, master, other_window, mainImage, crud, **kwargs):
+    def __init__(self, master, other_window, main_image, crud, **kwargs):
         super().__init__(**kwargs)
         self.master = master
 
-        self.imageLabel = ctk.CTkLabel(self.master, image=mainImage, text="", bg_color="white")
+        self.imageLabel = ctk.CTkLabel(self.master, image=main_image, text="", bg_color="white")
         self.imageLabel.place(x=380, y=35)
 
         self.mainLabel = ctk.CTkLabel(self.master, text="MileageMate", text_color="#555555",
@@ -95,5 +95,5 @@ class RegisterWindow(ctk.CTk):
         age = self.ageComboBox.get()
         password = self.passwordTextBox.get()
 
-        if first_name != "" and login != "" and email != "" and password != "":
+        if first_name != "" and login != "" and email != "" and ("@" in email) and password != "" and age != "<18":
             crud.create_user(first_name, login, email, age, password)
