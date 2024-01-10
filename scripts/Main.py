@@ -33,6 +33,7 @@ backImage = ctk.CTkImage(light_image=Image.open("images/back.png"), size=(35, 35
 backgroundImage = ctk.CTkImage(light_image=Image.open("images/background.png"), size=(1130, 700))
 showImage = ctk.CTkImage(light_image=Image.open("images/show.png"), size=(20, 20))
 hideImage = ctk.CTkImage(light_image=Image.open("images/hide.png"), size=(20, 20))
+trashcanImage = ctk.CTkImage(light_image=Image.open("images/trashcan.png"), size=(35, 35))
 
 crud = scripts.FirebaseCRUD.FirebaseCRUD()
 
@@ -42,7 +43,7 @@ register_app = scripts.RegisterWindow.RegisterWindow(register_window, login_wind
 main_app = scripts.MainWindow.MainWindow(main_window, login_app, login_window, backgroundImage, mainImage2,
                                          accountInfoImage,
                                          dashboardImage, accountImage, creditsImage, logoutImage, fuelImage,
-                                         serviceImage, carImage, plusImage, backImage,hideImage,showImage, crud)
+                                         serviceImage, carImage, plusImage, backImage,hideImage,showImage,trashcanImage, crud)
 
 
 def main():

@@ -20,9 +20,10 @@ class FirebaseCRUD:
         data = {'year': year, 'month': month, 'day': day, "money_spent": money_spent,
                 "liters_refueled": liters_refueled, "fuel_type": fuel_type, "gas_station": gas_station}
         user_id = login
-        self.database.child('users').child(user_id).child('fuel_records').push(data)
+        record=self.database.child('users').child(user_id).child('fuel_records').push(data)
 
-    def create_service_record(self, login, year, month, day, money_spent, service_type, if_successful, repair_shop):
+    def create_service_record(self, login, year, month, day, money_spent, service_type, if_successful,
+                              repair_shop):
         data = {'year': year, 'month': month, 'day': day, "money_spent": money_spent,
                 "service_type": service_type, "if_successful": if_successful, "repair_shop": repair_shop}
         user_id = login
@@ -51,6 +52,7 @@ class FirebaseCRUD:
         return make_info, type_info, model_info, year_info
 
     def read_fuel_records(self, user_id):
+        id_data=[]
         year_data = []
         month_data = []
         day_data = []
@@ -58,8 +60,12 @@ class FirebaseCRUD:
         liters_data = []
         fuel_data = []
         station_data = []
+
+
         try:
             for key in self.database.child('users').child(user_id).child("fuel_records").get().val():
+                id_info = self.database.child('users').child(user_id).child("fuel_records").child(
+                    key).get().key()
                 year_info = self.database.child('users').child(user_id).child("fuel_records").child(
                     key).get().val().get("year")
                 month_info = self.database.child('users').child(user_id).child("fuel_records").child(
@@ -74,6 +80,7 @@ class FirebaseCRUD:
                     key).get().val().get("fuel_type")
                 station_info = self.database.child('users').child(user_id).child("fuel_records").child(
                     key).get().val().get("gas_station")
+                id_data.append(id_info)
                 year_data.append(year_info)
                 month_data.append(month_info)
                 day_data.append(day_info)
@@ -81,13 +88,14 @@ class FirebaseCRUD:
                 liters_data.append(liters_info)
                 fuel_data.append(fuel_info)
                 station_data.append(station_info)
-            return year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data
+            return year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data, id_data
         except AttributeError:
-            return year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data
+            return year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data, id_data
         except TypeError:
-            return year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data
+            return year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data, id_data
 
     def read_services_records(self, user_id):
+        id_data=[]
         year_data = []
         month_data = []
         day_data = []
@@ -97,6 +105,8 @@ class FirebaseCRUD:
         repairShop_data = []
         try:
             for key in self.database.child('users').child(user_id).child("service_records").get().val():
+                id_info = self.database.child('users').child(user_id).child("service_records").child(
+                    key).get().key()
                 year_info = self.database.child('users').child(user_id).child("service_records").child(
                     key).get().val().get("year")
                 month_info = self.database.child('users').child(user_id).child("service_records").child(
@@ -112,6 +122,7 @@ class FirebaseCRUD:
                     key).get().val().get("if_successful")
                 repairShop_info = self.database.child('users').child(user_id).child("service_records").child(
                     key).get().val().get("repair_shop")
+                id_data.append(id_info)
                 year_data.append(year_info)
                 month_data.append(month_info)
                 day_data.append(day_info)
@@ -119,13 +130,13 @@ class FirebaseCRUD:
                 serviceType_data.append(serviceType_info)
                 ifSuccessful_data.append(ifSuccessful_info)
                 repairShop_data.append(repairShop_info)
-            return year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data
+            return year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data, id_data
         except AttributeError:
-            return year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data
+            return year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data, id_data
         except TypeError:
-            return year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data
+            return year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data, id_data
 
-    def read_nr_of_fuel_records(self, user_id, day, month, year):
+    def read_nr_of_fuel_records_by_date(self, user_id, day, month, year):
         nr_of_fuel_records = 0
         try:
             for key in self.database.child('users').child(user_id).child("fuel_records").get().val():
@@ -144,7 +155,7 @@ class FirebaseCRUD:
         except TypeError:
             return nr_of_fuel_records
 
-    def read_nr_of_service_records(self, user_id, day, month, year):
+    def read_nr_of_service_records_by_date(self, user_id, day, month, year):
         nr_of_service_records = 0
         try:
             for key in self.database.child('users').child(user_id).child("service_records").get().val():
@@ -221,3 +232,9 @@ class FirebaseCRUD:
 
     def delete_user(self, user_id):
         self.database.child('users').child(user_id).remove()
+
+    def delete_fuel_record(self, user_id, record_id):
+        self.database.child('users').child(user_id).child("fuel_records").child(record_id).remove()
+
+    def delete_service_record(self, user_id, record_id):
+        self.database.child('users').child(user_id).child("service_records").child(record_id).remove()

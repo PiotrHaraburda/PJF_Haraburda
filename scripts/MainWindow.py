@@ -28,6 +28,7 @@ class MainWindow(ctk.CTk):
                  dashboard_image, account_image,
                  credits_image,
                  logout_image, fuel_image, service_image, car_image, plus_image, back_image, hide_image, show_image,
+                 trashcan_image,
                  firebase_crud,
                  **kwargs):
         super().__init__(**kwargs)
@@ -37,11 +38,13 @@ class MainWindow(ctk.CTk):
         self.fuelRecordPanes = []
         self.dateLabels = []
         self.infoLabels = []
+        self.deleteFuelRecordButtons = []
 
         self.serviceRecordPanes = []
         self.dateLabels2 = []
         self.infoLabels2 = []
         self.successfulLabels = []
+        self.deleteServiceRecordButtons = []
 
         self.leftPane = ctk.CTkFrame(self.master, width=270, height=700, fg_color="#00a05e", bg_color="#e3e7e6",
                                      corner_radius=15)
@@ -286,7 +289,7 @@ class MainWindow(ctk.CTk):
 
         self.backImage = ctk.CTkLabel(self.addFuelPane, image=back_image, text="", cursor="hand2")
         self.backImage.place(x=5, y=15)
-        self.backImage.bind('<Button-1>', lambda event, crud=firebase_crud: self.add_fuel_record_back_callback(crud))
+        self.backImage.bind('<Button-1>', lambda event, crud=firebase_crud: self.add_fuel_record_back_callback())
 
         self.addNewFuelRecordLabel = ctk.CTkLabel(self.addFuelPane, text="Adding new fuel purchase record",
                                                   text_color="#00a05e", width=810,
@@ -350,7 +353,8 @@ class MainWindow(ctk.CTk):
                                                     font=("Trebuchet", 14, "bold"),
                                                     width=310, height=35, corner_radius=5, hover_color="#dbdbd9",
                                                     bg_color="white", border_width=1, text_color="#555555",
-                                                    command=lambda: self.add_new_fuel_record(firebase_crud))
+                                                    command=lambda: self.add_new_fuel_record(firebase_crud,
+                                                                                             trashcan_image))
 
         self.dayTextBox.place(x=90, y=120)
         self.monthTextBox.place(x=90, y=220)
@@ -392,7 +396,7 @@ class MainWindow(ctk.CTk):
 
         self.backImage = ctk.CTkLabel(self.addServicesPane, image=back_image, text="", cursor="hand2")
         self.backImage.place(x=5, y=15)
-        self.backImage.bind('<Button-1>', lambda event, crud=firebase_crud: self.add_service_record_back_callback(crud))
+        self.backImage.bind('<Button-1>', lambda event, crud=firebase_crud: self.add_service_record_back_callback())
 
         self.addNewServiceRecordLabel = ctk.CTkLabel(self.addServicesPane, text="Adding new service record",
                                                      text_color="#00a05e", width=810,
@@ -462,7 +466,8 @@ class MainWindow(ctk.CTk):
                                                        font=("Trebuchet", 14, "bold"),
                                                        width=310, height=35, corner_radius=5, hover_color="#dbdbd9",
                                                        bg_color="white", border_width=1, text_color="#555555",
-                                                       command=lambda: self.add_new_service_record(firebase_crud))
+                                                       command=lambda: self.add_new_service_record(firebase_crud,
+                                                                                                   trashcan_image))
 
         self.dayTextBox2.place(x=90, y=120)
         self.monthTextBox2.place(x=90, y=220)
@@ -736,27 +741,27 @@ class MainWindow(ctk.CTk):
         self.creditsLabel2 = ctk.CTkLabel(self.creditsPane,
                                           text="Backend: Python",
                                           text_color="#555555",
-                                          font=("Trebuchet", 13, "bold"),
+                                          font=("Trebuchet", 12, "bold"),
                                           bg_color="white")
-        self.creditsLabel2.place(x=90, y=90)
+        self.creditsLabel2.place(x=95, y=90)
         self.creditsLabel3 = ctk.CTkLabel(self.creditsPane,
                                           text="Frontend: CustomTkinter, Tkinter",
                                           text_color="#555555",
-                                          font=("Trebuchet", 13, "bold"),
+                                          font=("Trebuchet", 12, "bold"),
                                           bg_color="white")
-        self.creditsLabel3.place(x=90, y=110)
+        self.creditsLabel3.place(x=95, y=110)
         self.creditsLabel4 = ctk.CTkLabel(self.creditsPane,
                                           text="Database: Firebase",
                                           text_color="#555555",
-                                          font=("Trebuchet", 13, "bold"),
+                                          font=("Trebuchet", 12, "bold"),
                                           bg_color="white")
-        self.creditsLabel4.place(x=90, y=130)
+        self.creditsLabel4.place(x=95, y=130)
         self.creditsLabel5 = ctk.CTkLabel(self.creditsPane,
                                           text="Used API: Car Data by Principal APIs",
                                           text_color="#555555",
-                                          font=("Trebuchet", 13, "bold"),
+                                          font=("Trebuchet", 12, "bold"),
                                           bg_color="white")
-        self.creditsLabel5.place(x=90, y=150)
+        self.creditsLabel5.place(x=95, y=150)
 
         self.logoutPane = ctk.CTkFrame(self.mainPane, width=400, height=200, corner_radius=15,
                                        fg_color="white",
@@ -867,7 +872,7 @@ class MainWindow(ctk.CTk):
                                                  bg_color="white")
         self.travelCostValueLabel.place(x=540, y=335)
 
-        self.mainPane.bind("<Map>", lambda event, crud=firebase_crud: self.account_info_update(crud))
+        self.leftPane.bind("<Map>", lambda event, crud=firebase_crud: self.account_info_update(crud, trashcan_image))
 
     def calculate_callback(self):
         burnedFuel = self.burnedFuelTextBox.get("0.0", 'end-1c')
@@ -1011,7 +1016,7 @@ class MainWindow(ctk.CTk):
         self.login_app.passwordTextBox.delete(0, END)
         login_window.deiconify()
 
-    def add_new_fuel_record(self, crud):
+    def add_new_fuel_record(self, crud, trashcan_image):
         accountLogin = self.login_app.accountLogin
         year = self.yearTextBox.get("0.0", 'end-1c')
         month = self.monthTextBox.get("0.0", 'end-1c')
@@ -1023,12 +1028,13 @@ class MainWindow(ctk.CTk):
 
         if int(year) <= datetime.now().year and 12 >= int(month) >= 1 and 31 >= int(day) >= 1:
             crud.create_fuel_record(self.login_app.accountLogin, year, month, day, money, liters, fueltype, station)
-            self.load_fuel_records(crud)
+            self.load_fuel_records(crud, trashcan_image, accountLogin)
             self.calendar_click_callback(crud)
             self.make_plot(crud, accountLogin)
             self.nrOfRefuelingsLabel.configure(text=str(len(self.fuelRecordPanes)))
+            self.add_fuel_record_back_callback()
 
-    def add_new_service_record(self, crud):
+    def add_new_service_record(self, crud, trashcan_image):
         accountLogin = self.login_app.accountLogin
         year = self.yearTextBox2.get("0.0", 'end-1c')
         month = self.monthTextBox2.get("0.0", 'end-1c')
@@ -1039,18 +1045,20 @@ class MainWindow(ctk.CTk):
         repairShop = self.repairShopTextBox.get("0.0", 'end-1c')
 
         if int(year) <= datetime.now().year and 12 >= int(month) >= 1 and 31 >= int(day) >= 1:
-            crud.create_service_record(self.login_app.accountLogin, year, month, day, money, serviceType, ifSuccessful,
+            crud.create_service_record(self.login_app.accountLogin, year, month, day, money, serviceType,
+                                       ifSuccessful,
                                        repairShop)
-            self.load_services_records(crud)
+            self.load_services_records(crud, trashcan_image, accountLogin)
             self.calendar_click_callback(crud)
             self.make_plot(crud, accountLogin)
             self.nrOfServicesLabel.configure(text=str(len(self.serviceRecordPanes)))
+            self.add_service_record_back_callback()
 
     def add_fuel_record_callback(self, event):
         self.addFuelPane.place(x=20, y=60)
         self.fuelListPane.place_forget()
 
-    def add_fuel_record_back_callback(self, crud):
+    def add_fuel_record_back_callback(self):
         self.fuelListPane.place(x=20, y=60)
         self.addFuelPane.place_forget()
 
@@ -1058,7 +1066,7 @@ class MainWindow(ctk.CTk):
         self.addServicesPane.place(x=20, y=60)
         self.servicesListPane.place_forget()
 
-    def add_service_record_back_callback(self, crud):
+    def add_service_record_back_callback(self):
         self.servicesListPane.place(x=20, y=60)
         self.addServicesPane.place_forget()
 
@@ -1078,9 +1086,9 @@ class MainWindow(ctk.CTk):
         self.dateLabel.update()
 
         self.refuelingsNumberOnDateLabel.configure(
-            text=str(crud.read_nr_of_fuel_records(self.login_app.accountLogin, day, month, year)) + "x")
+            text=str(crud.read_nr_of_fuel_records_by_date(self.login_app.accountLogin, day, month, year)) + "x")
         self.servicesNumberOnDateLabel.configure(
-            text=str(crud.read_nr_of_service_records(self.login_app.accountLogin, day, month, year)) + "x")
+            text=str(crud.read_nr_of_service_records_by_date(self.login_app.accountLogin, day, month, year)) + "x")
 
     def dash_button_callback(self, event):
         if self.leftPane.cget("width") == 70:
@@ -1237,7 +1245,7 @@ class MainWindow(ctk.CTk):
         ax1.set_xticklabels(last_seven_months, rotation=0)
         ax1.set_title('Money spent in recent months')
 
-    def account_info_update(self, crud):
+    def account_info_update(self, crud, trashcan_image):
         accountFirstName = self.login_app.accountFirstName
         accountLogin = self.login_app.accountLogin
         accountEmail = self.login_app.accountEmail
@@ -1247,9 +1255,9 @@ class MainWindow(ctk.CTk):
         self.accountLoginInfo.configure(text=accountLogin)
         self.accountFirstNameInfo.configure(text=accountFirstName)
         self.accountEmailInfo.configure(text=accountEmail)
-        self.load_fuel_records(crud)
+        self.load_fuel_records(crud, trashcan_image, accountLogin)
         self.nrOfRefuelingsLabel.configure(text=str(len(self.fuelRecordPanes)))
-        self.load_services_records(crud)
+        self.load_services_records(crud, trashcan_image, accountLogin)
         self.nrOfServicesLabel.configure(text=str(len(self.serviceRecordPanes)))
         self.accountInfo.update()
         self.nrOfRefuelingsLabel.update()
@@ -1434,7 +1442,7 @@ class MainWindow(ctk.CTk):
         self.changePasswordPane.place_forget()
         self.deleteAccountPane.place_forget()
 
-    def load_fuel_records(self, crud):
+    def load_fuel_records(self, crud, trashcan_image, accountLogin):
 
         for pane in self.fuelRecordPanes:
             pane.destroy()
@@ -1442,25 +1450,30 @@ class MainWindow(ctk.CTk):
         self.fuelRecordPanes.clear()
         self.dateLabels.clear()
         self.infoLabels.clear()
+        self.deleteFuelRecordButtons.clear()
 
-        year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data = crud.read_fuel_records(
+        year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data, id_data = crud.read_fuel_records(
             self.login_app.accountLogin)
 
         if not year_data:
             return
 
-        fuel_records = list(zip(year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data))
-
-        fuel_records = [(int(record[0]), int(record[1]), int(record[2]), record[3], record[4], record[5], record[6]) for
-                        record in fuel_records]
+        fuel_records = list(
+            zip(year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data, id_data))
 
         fuel_records = [
-            (record[0], f"{int(record[1]):02d}", f"{int(record[2]):02d}", record[3], record[4], record[5], record[6])
+            (int(record[0]), int(record[1]), int(record[2]), record[3], record[4], record[5], record[6], record[7]) for
+            record in fuel_records]
+
+        fuel_records = [
+            (record[0], f"{int(record[1]):02d}", f"{int(record[2]):02d}", record[3], record[4], record[5], record[6],
+             record[7])
             for record in fuel_records]
 
         sorted_records = sorted(fuel_records, key=lambda x: (x[0], x[1], x[2]), reverse=True)
 
-        year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data = zip(*sorted_records)
+        year_data, month_data, day_data, money_data, liters_data, fuel_data, station_data, id_data = zip(
+            *sorted_records)
 
         i = 0
         j = 0
@@ -1480,15 +1493,26 @@ class MainWindow(ctk.CTk):
                                   str(fuel_data[i]) + " at " + str(station_data[i]) + " gas station.",
                              fg_color="#e3e7e6",
                              text_color="#555555", width=750, font=("Century Gothic", 18, "bold"), justify=CENTER))
+            self.deleteFuelRecordButtons.append(
+                ctk.CTkLabel(self.fuelRecordPanes[i], image=trashcan_image, text="", cursor="hand2"))
             i = i + 1
 
         for pane in self.fuelRecordPanes:
             pane.grid(row=j + 1, column=0, pady=15, padx=25)
             self.dateLabels[j].place(x=0, y=15)
             self.infoLabels[j].place(x=0, y=50)
+            self.deleteFuelRecordButtons[j].place(x=680, y=33)
+            self.deleteFuelRecordButtons[j].bind('<Button-1>',
+                                                 lambda event, record=id_data[j]: self.deleteFuelRecord(record, crud,
+                                                                                                        accountLogin,
+                                                                                                        trashcan_image))
             j = j + 1
 
-    def load_services_records(self, crud):
+    def deleteFuelRecord(self, record, crud, accountLogin, trashcan_image):
+        crud.delete_fuel_record(accountLogin, record)
+        self.account_info_update(crud, trashcan_image)
+
+    def load_services_records(self, crud, trashcan_image, accountLogin):
 
         for pane in self.serviceRecordPanes:
             pane.destroy()
@@ -1497,27 +1521,31 @@ class MainWindow(ctk.CTk):
         self.dateLabels2.clear()
         self.infoLabels2.clear()
         self.successfulLabels.clear()
+        self.deleteServiceRecordButtons.clear()
 
-        year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data = crud.read_services_records(
+        year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data, id_data = crud.read_services_records(
             self.login_app.accountLogin)
 
         if not year_data:
             return
 
         service_records = list(
-            zip(year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data))
-
-        service_records = [(int(record[0]), int(record[1]), int(record[2]), record[3], record[4], record[5], record[6])
-                           for
-                           record in service_records]
+            zip(year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data,
+                id_data))
 
         service_records = [
-            (record[0], f"{int(record[1]):02d}", f"{int(record[2]):02d}", record[3], record[4], record[5], record[6])
+            (int(record[0]), int(record[1]), int(record[2]), record[3], record[4], record[5], record[6], record[7])
+            for
+            record in service_records]
+
+        service_records = [
+            (record[0], f"{int(record[1]):02d}", f"{int(record[2]):02d}", record[3], record[4], record[5], record[6],
+             record[7])
             for record in service_records]
 
         sorted_records = sorted(service_records, key=lambda x: (x[0], x[1], x[2]), reverse=True)
 
-        year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data = zip(
+        year_data, month_data, day_data, money_data, serviceType_data, ifSuccessful_data, repairShop_data, id_data = zip(
             *sorted_records)
 
         i = 0
@@ -1543,14 +1571,26 @@ class MainWindow(ctk.CTk):
                              text="Was this service successful?: " + str(ifSuccessful_data[i]),
                              fg_color="#e3e7e6",
                              text_color="#00a05e", font=("Century Gothic", 17, "bold")))
+            self.deleteServiceRecordButtons.append(
+                ctk.CTkLabel(self.serviceRecordPanes[i], image=trashcan_image, text="", cursor="hand2"))
             i = i + 1
 
         for pane in self.serviceRecordPanes:
             pane.grid(row=j + 1, column=0, pady=15, padx=25)
             self.dateLabels2[j].place(x=20, y=15)
             self.infoLabels2[j].place(x=20, y=50)
-            self.successfulLabels[j].place(x=430, y=15)
+            self.successfulLabels[j].place(x=230, y=15)
+            self.deleteServiceRecordButtons[j].place(x=680, y=33)
+            self.deleteServiceRecordButtons[j].bind('<Button-1>',
+                                                    lambda event, record=id_data[j]: self.deleteServiceRecord(record,
+                                                                                                              crud,
+                                                                                                              accountLogin,
+                                                                                                              trashcan_image))
             j = j + 1
+
+    def deleteServiceRecord(self, record, crud, accountLogin, trashcan_image):
+        crud.delete_service_record(accountLogin, record)
+        self.account_info_update(crud, trashcan_image)
 
     def load_car_data(self, crud, account_login):
         make, body_type, model, year = crud.read_car_data(account_login)
